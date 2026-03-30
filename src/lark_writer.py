@@ -56,7 +56,7 @@ class LarkWriter:
             raise RuntimeError(f"Wiki node lookup failed: {data.get('msg')} (code={data.get('code')})")
         node = data["data"]["node"]
         self._bitable_app_token = node["obj_token"]
-        print(f"[lark] Resolved Bitable app_token: {self._bitable_app_token}")
+
         return self._bitable_app_token
 
     def get_recent_timestamps(self, field_name: str = "日期", n: int = 20) -> set:
@@ -89,7 +89,7 @@ class LarkWriter:
             val = item.get("fields", {}).get(field_name)
             if val is not None:
                 timestamps.add(val)
-        print(f"[lark] Fetched {len(timestamps)} existing timestamp(s) for dedup")
+        print(f"[dedup] Fetched {len(timestamps)} existing timestamp(s)")
         return timestamps
 
     def append_records(self, records: List[Dict[str, Any]]) -> None:
