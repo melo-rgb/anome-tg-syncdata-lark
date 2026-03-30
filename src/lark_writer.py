@@ -5,6 +5,9 @@ import requests
 
 LARK_AUTH_URL = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal"
 LARK_WIKI_NODE_URL = "https://open.feishu.cn/open-apis/wiki/v2/spaces/get_node"
+LARK_BITABLE_RECORDS_URL = (
+    "https://open.feishu.cn/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/records"
+)
 LARK_BITABLE_BATCH_CREATE_URL = (
     "https://open.feishu.cn/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/records/batch_create"
 )
@@ -55,6 +58,39 @@ class LarkWriter:
         self._bitable_app_token = node["obj_token"]
         print(f"[lark] Resolved Bitable app_token: {self._bitable_app_token}")
         return self._bitable_app_token
+
+    def get_recent_timestamps(self, field_name: str = "日期", n: int = 20) -> set:
+        """
+        Fetch the last n records sorted by field_name descending,
+        return a set of timestamp values for deduplication.
+        """
+        app_token = self._resolve_bitable_token()
+        token = self._get_token()
+        url = LARK_BITABLE_RECORDS_URL.format(app_token=app_token, table_id=self.table_id)
+        resp = requests.get(
+            url,
+            params={
+                "page_size": n,
+                "sort": f'[{{"field_name":"{field_name}","desc":true}}]',
+            },
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=15,
+        )
+        if not resp.ok:
+            print(f"[lark] Warning: could not fetch recent records: HTTP {resp.status_code}")
+            return set()
+        data = resp.json()
+        if data.get("code") != 0:
+            print(f"[lark] Warning: could not fetch recent records: {data.get('msg')}")
+            return set()
+        items = data.get("data", {}).get("items", [])
+        timestamps = set()
+        for item in items:
+            val = item.get("fields", {}).get(field_name)
+            if val is not None:
+                timestamps.add(val)
+        print(f"[lark] Fetched {len(timestamps)} existing timestamp(s) for dedup")
+        return timestamps
 
     def append_records(self, records: List[Dict[str, Any]]) -> None:
         """
