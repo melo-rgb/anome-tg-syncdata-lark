@@ -63,14 +63,10 @@ def main():
 
     for msg in messages:
         parsed = parser.parse(msg)
-        if parsed is None:
-            print(f"[parser] Skipped message {msg.id} (no match)")
-            newest_id = max(newest_id, msg.id)
-            continue
-        record = parser.to_record(parsed)
-        records.append(record)
         newest_id = max(newest_id, msg.id)
-        print(f"[parser] Parsed message {msg.id}: {record['fields']}")
+        if parsed is None:
+            continue
+        records.append(parser.to_record(parsed))
 
     print(f"[parser] {len(records)} record(s) parsed from {len(messages)} message(s)")
 
