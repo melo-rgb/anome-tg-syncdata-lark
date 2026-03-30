@@ -1,6 +1,23 @@
 {
   "_comment": "根据实际 bot 消息格式定制的解析规则",
   "strategy": "regex",
+  "field_labels": {
+    "timestamp":              "日期",
+    "btg_visitors":           "BTG链接访问用户数",
+    "btg_tiktok":             "BTG渠道细分tiktok",
+    "btg_fb":                 "BTG渠道细分fb",
+    "btg_not_set":            "BTG渠道细分not set",
+    "btg_twitter":            "BTG渠道细分twitter",
+    "btg_direct":             "BTG渠道细分direct",
+    "btg_mfacebook":          "BTG渠道细分m.facebook.com",
+    "btg_data_not_available": "BTG渠道细分data not available",
+    "btg_an":                 "BTG渠道细分an",
+    "btg_ig":                 "BTG渠道细分ig",
+    "btg_reg_total":          "BTG注册用户数总计",
+    "btg_reg_4h":             "BTG注册用户数近4小时新增",
+    "btg_deposit":            "BTG入金总量",
+    "btg_address_users":      "BTG有地址用户数"
+  },
   "fields": [
     {
       "name": "timestamp",
