@@ -8,7 +8,7 @@ No Python changes needed for common regex-based formats.
 import json
 import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "config", "parser_config.json")
@@ -93,7 +93,8 @@ def _format_ts(dt) -> str:
         return ""
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    tz_gmt7 = timezone(timedelta(hours=7))
+    return dt.astimezone(tz_gmt7).strftime("%Y-%m-%d %H:%M")
 
 
 def _cast(value: str, field_type: str) -> Any:
