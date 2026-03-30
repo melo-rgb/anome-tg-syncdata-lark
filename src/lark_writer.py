@@ -1,34 +1,28 @@
 import time
-from typing import List, Any
+from typing import List, Dict, Any
 
 import requests
 
 LARK_AUTH_URL = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal"
-LARK_APPEND_URL = "https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/{token}/values_append"
-
-
-def _col_letter(n: int) -> str:
-    """Convert 1-based column number to Excel-style letter (1→A, 26→Z, 27→AA)."""
-    result = ""
-    while n > 0:
-        n, remainder = divmod(n - 1, 26)
-        result = chr(65 + remainder) + result
-    return result
+LARK_WIKI_NODE_URL = "https://open.feishu.cn/open-apis/wiki/v2/spaces/get_node"
+LARK_BITABLE_BATCH_CREATE_URL = (
+    "https://open.feishu.cn/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/records/batch_create"
+)
 
 
 class LarkWriter:
-    def __init__(self, app_id: str, app_secret: str, spreadsheet_token: str, sheet_id: str):
+    def __init__(self, app_id: str, app_secret: str, wiki_node_token: str, table_id: str):
         self.app_id = app_id
         self.app_secret = app_secret
-        self.spreadsheet_token = spreadsheet_token
-        self.sheet_id = sheet_id
+        self.wiki_node_token = wiki_node_token
+        self.table_id = table_id
         self._access_token: str = ""
         self._token_expires_at: float = 0.0
+        self._bitable_app_token: str = ""
 
     def _get_token(self) -> str:
         if self._access_token and time.time() < self._token_expires_at - 60:
             return self._access_token
-
         resp = requests.post(
             LARK_AUTH_URL,
             json={"app_id": self.app_id, "app_secret": self.app_secret},
@@ -38,43 +32,59 @@ class LarkWriter:
         data = resp.json()
         if data.get("code") != 0:
             raise RuntimeError(f"Lark auth failed: {data.get('msg')} (code={data.get('code')})")
-
         self._access_token = data["tenant_access_token"]
         self._token_expires_at = time.time() + data.get("expire", 7200)
         return self._access_token
 
-    def append_rows(self, rows: List[List[Any]]) -> None:
-        if not rows:
-            return
-
+    def _resolve_bitable_token(self) -> str:
+        if self._bitable_app_token:
+            return self._bitable_app_token
         token = self._get_token()
-        url = LARK_APPEND_URL.format(token=self.spreadsheet_token)
-
-        # 根据数据列数生成列字母范围，如 15 列 → A:O
-        col_count = len(rows[0]) if rows else 1
-        end_col = _col_letter(col_count)
-        range_str = f"{self.sheet_id}!A1:{end_col}1"
-
-        payload = {
-            "valueRange": {
-                "range": range_str,
-                "values": rows,
-            }
-        }
-        resp = requests.post(
-            url,
-            json=payload,
+        resp = requests.get(
+            LARK_WIKI_NODE_URL,
+            params={"token": self.wiki_node_token},
             headers={"Authorization": f"Bearer {token}"},
-            params={"insertDataOption": "INSERT_ROWS"},
-            timeout=15,
+            timeout=10,
         )
         if not resp.ok:
-            raise RuntimeError(
-                f"Lark append failed: HTTP {resp.status_code}\n{resp.text}"
-            )
+            raise RuntimeError(f"Wiki node lookup failed: HTTP {resp.status_code}\n{resp.text}")
         data = resp.json()
         if data.get("code") != 0:
-            raise RuntimeError(f"Lark append failed: {data.get('msg')} (code={data.get('code')})\n{resp.text}")
+            raise RuntimeError(f"Wiki node lookup failed: {data.get('msg')} (code={data.get('code')})")
+        node = data["data"]["node"]
+        self._bitable_app_token = node["obj_token"]
+        print(f"[lark] Resolved Bitable app_token: {self._bitable_app_token}")
+        return self._bitable_app_token
 
-        updated = data.get("data", {}).get("updatedRows", len(rows))
-        print(f"[lark] Appended {updated} row(s) to sheet '{self.sheet_id}'")
+    def append_records(self, records: List[Dict[str, Any]]) -> None:
+        """
+        records: list of dicts, e.g. [{"fields": {"日期": "2026-03-30", ...}}, ...]
+        """
+        if not records:
+            return
+
+        app_token = self._resolve_bitable_token()
+        token = self._get_token()
+        url = LARK_BITABLE_BATCH_CREATE_URL.format(
+            app_token=app_token, table_id=self.table_id
+        )
+        # Bitable batch_create limit is 500 records per request
+        for i in range(0, len(records), 500):
+            batch = records[i : i + 500]
+            resp = requests.post(
+                url,
+                json={"records": batch},
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=30,
+            )
+            if not resp.ok:
+                raise RuntimeError(
+                    f"Bitable batch_create failed: HTTP {resp.status_code}\n{resp.text}"
+                )
+            data = resp.json()
+            if data.get("code") != 0:
+                raise RuntimeError(
+                    f"Bitable batch_create failed: {data.get('msg')} (code={data.get('code')})\n{resp.text}"
+                )
+            created = len(data.get("data", {}).get("records", batch))
+            print(f"[lark] Created {created} record(s) in table '{self.table_id}'")
