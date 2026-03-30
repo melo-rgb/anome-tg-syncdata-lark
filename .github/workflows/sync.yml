@@ -1,0 +1,56 @@
+name: Sync Telegram to Lark
+
+on:
+  schedule:
+    # 每 30 分钟执行一次，可按需调整
+    - cron: '*/30 * * * *'
+  workflow_dispatch:  # 允许从 GitHub UI 手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 需要写权限以提交 last_message_id.txt
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run sync
+        env:
+          # Secrets（在 GitHub repo Settings → Secrets → Actions 中添加）
+          TG_SESSION_STRING: ${{ secrets.TG_SESSION_STRING }}
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          LARK_APP_ID: ${{ secrets.LARK_APP_ID }}
+          LARK_APP_SECRET: ${{ secrets.LARK_APP_SECRET }}
+          # Variables（在 GitHub repo Settings → Variables → Actions 中添加）
+          TG_GROUP_ID: ${{ vars.TG_GROUP_ID }}
+          BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+          LARK_SPREADSHEET_TOKEN: ${{ vars.LARK_SPREADSHEET_TOKEN }}
+          LARK_SHEET_ID: ${{ vars.LARK_SHEET_ID }}
+        run: python main.py
+
+      - name: Commit updated state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/last_message_id.txt
+          git diff --cached --quiet || git commit -m "chore: update last_message_id [skip ci]"
+          git push
