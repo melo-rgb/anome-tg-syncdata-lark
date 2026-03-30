@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Telegram → Lark spreadsheet sync
-Reads new bot messages from a Telegram group and appends them to a Lark sheet.
+Telegram → Lark Bitable sync
+Reads new bot messages from a Telegram group and appends them to a Lark Bitable table.
 """
 
 import os
@@ -31,8 +31,8 @@ def main():
 
     lark_app_id = require_env("LARK_APP_ID")
     lark_app_secret = require_env("LARK_APP_SECRET")
-    lark_spreadsheet_token = require_env("LARK_SPREADSHEET_TOKEN")
-    lark_sheet_id = os.environ.get("LARK_SHEET_ID", "Sheet1").strip()
+    lark_wiki_node_token = require_env("LARK_WIKI_NODE_TOKEN")  # SEDkw5tyciBmIdkTGSPlBQsqgm3
+    lark_table_id = require_env("LARK_TABLE_ID")                # tbl29NdWBL242JmD
 
     # ── Load state ──────────────────────────────────────────────────────────
     last_id = state.load_last_id()
@@ -58,7 +58,7 @@ def main():
 
     # ── Parse messages ──────────────────────────────────────────────────────
     parser = MessageParser()
-    rows = []
+    records = []
     newest_id = last_id
 
     for msg in messages:
@@ -67,24 +67,24 @@ def main():
             print(f"[parser] Skipped message {msg.id} (no match)")
             newest_id = max(newest_id, msg.id)
             continue
-        row = parser.to_row(parsed)
-        rows.append(row)
+        record = parser.to_record(parsed)
+        records.append(record)
         newest_id = max(newest_id, msg.id)
-        print(f"[parser] Parsed message {msg.id}: {row}")
+        print(f"[parser] Parsed message {msg.id}: {record['fields']}")
 
-    print(f"[parser] {len(rows)} row(s) parsed from {len(messages)} message(s)")
+    print(f"[parser] {len(records)} record(s) parsed from {len(messages)} message(s)")
 
-    # ── Write to Lark ───────────────────────────────────────────────────────
-    if rows:
+    # ── Write to Lark Bitable ───────────────────────────────────────────────
+    if records:
         writer = LarkWriter(
             app_id=lark_app_id,
             app_secret=lark_app_secret,
-            spreadsheet_token=lark_spreadsheet_token,
-            sheet_id=lark_sheet_id,
+            wiki_node_token=lark_wiki_node_token,
+            table_id=lark_table_id,
         )
-        writer.append_rows(rows)
+        writer.append_records(records)
     else:
-        print("[lark] No rows to write.")
+        print("[lark] No records to write.")
 
     # ── Save state ──────────────────────────────────────────────────────────
     state.save_last_id(newest_id)
