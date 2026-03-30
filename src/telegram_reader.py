@@ -1,10 +1,36 @@
 import asyncio
-import os
+import time
 from typing import List
 
 from telethon import TelegramClient
 from telethon.sessions import StringSession
-from telethon.tl.types import Message
+from telethon.errors import ServerError
+
+
+async def _fetch(session_string, api_id, api_hash, group_id, last_message_id, bot_username, limit):
+    client = TelegramClient(StringSession(session_string), api_id, api_hash)
+    await client.connect()
+    try:
+        if not await client.is_user_authorized():
+            raise RuntimeError("Telegram session is not authorized. Re-run generate_session.py locally.")
+
+        try:
+            group_id_resolved = int(group_id)
+        except ValueError:
+            group_id_resolved = group_id
+
+        kwargs = {
+            "entity": group_id_resolved,
+            "limit": limit,
+            "min_id": last_message_id,
+        }
+        if bot_username:
+            kwargs["from_user"] = bot_username.lstrip("@")
+
+        messages = await client.get_messages(**kwargs)
+        return list(reversed(messages))
+    finally:
+        await client.disconnect()
 
 
 def fetch_new_messages(
@@ -15,41 +41,21 @@ def fetch_new_messages(
     last_message_id: int,
     bot_username: str = "",
     limit: int = 200,
-) -> List[Message]:
+    retries: int = 3,
+) -> List:
     """
-    Fetch messages from a Telegram group that are newer than last_message_id.
-    Optionally filter by bot_username (sender).
-    Returns messages sorted oldest-first.
+    Fetch messages from a Telegram group newer than last_message_id.
+    Retries on transient Telegram server errors (-500).
     """
-
-    async def _fetch():
-        client = TelegramClient(StringSession(session_string), api_id, api_hash)
-        await client.start()
+    for attempt in range(1, retries + 1):
         try:
-            # Resolve group entity
-            try:
-                group_id_resolved = int(group_id)
-            except ValueError:
-                group_id_resolved = group_id  # username like "@mygroup"
-
-            kwargs = {
-                "entity": group_id_resolved,
-                "limit": limit,
-                "min_id": last_message_id,
-            }
-            # Filter by sender if specified
-            if bot_username:
-                sender = bot_username.lstrip("@")
-                kwargs["from_user"] = sender
-
-            messages = await client.get_messages(**kwargs)
-            # get_messages returns newest-first; reverse for chronological order
-            return list(reversed(messages))
-        finally:
-            await client.disconnect()
-
-    loop = asyncio.new_event_loop()
-    try:
-        return loop.run_until_complete(_fetch())
-    finally:
-        loop.close()
+            return asyncio.run(
+                _fetch(session_string, api_id, api_hash, group_id, last_message_id, bot_username, limit)
+            )
+        except ServerError as e:
+            if attempt < retries:
+                wait = 5 * attempt
+                print(f"[telegram] Server error ({e}), retrying in {wait}s... (attempt {attempt}/{retries})")
+                time.sleep(wait)
+            else:
+                raise
