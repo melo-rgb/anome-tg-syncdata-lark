@@ -8,7 +8,7 @@ No Python changes needed for common regex-based formats.
 import json
 import os
 import re
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "config", "parser_config.json")
@@ -94,13 +94,13 @@ class MessageParser:
         return {"fields": fields}
 
 
-def _format_ts(dt) -> str:
+def _format_ts(dt) -> int:
+    """Return Unix timestamp in milliseconds (required by Lark Bitable date fields)."""
     if dt is None:
-        return ""
+        return 0
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
-    tz_gmt7 = timezone(timedelta(hours=7))
-    return dt.astimezone(tz_gmt7).strftime("%Y-%m-%d %H:%M")
+    return int(dt.timestamp() * 1000)
 
 
 def _cast(value: str, field_type: str) -> Any:
