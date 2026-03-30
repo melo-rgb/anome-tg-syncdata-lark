@@ -81,11 +81,17 @@ class MessageParser:
 
         return result if result else None
 
-    def to_row(self, parsed: Dict[str, Any]) -> List[Any]:
-        """Convert parsed dict to ordered list for Lark spreadsheet row."""
-        if self.row_order:
-            return [parsed.get(field, "") for field in self.row_order]
-        return list(parsed.values())
+    def to_record(self, parsed: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert parsed dict to Bitable record format: {"fields": {"列名": value, ...}}"""
+        labels = self.config.get("field_labels", {})
+        fields = {}
+        order = self.row_order if self.row_order else list(parsed.keys())
+        for key in order:
+            if key not in parsed:
+                continue
+            label = labels.get(key, key)
+            fields[label] = parsed[key]
+        return {"fields": fields}
 
 
 def _format_ts(dt) -> str:
