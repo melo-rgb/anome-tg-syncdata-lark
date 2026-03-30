@@ -2,8 +2,10 @@ name: Sync Telegram to Lark
 
 on:
   schedule:
-    # 每 4 小时 05 分执行一次（错开整点，等待 bot 播报完成）
-    - cron: '5 */4 * * *'
+    # GMT+7 bot 播报时间 +5 分钟（UTC = GMT+7 减 7 小时）
+    # GMT+7: 00:05 / 04:05 / 08:05 / 12:05 / 16:05 / 20:05
+    # UTC:   17:05 / 21:05 / 01:05 / 05:05 / 09:05 / 13:05
+    - cron: '5 17,21,1,5,9,13 * * *'
   workflow_dispatch:  # 允许从 GitHub UI 手动触发
 
 jobs:
