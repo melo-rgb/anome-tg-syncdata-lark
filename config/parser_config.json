@@ -1,0 +1,54 @@
+{
+  "_comment": "编辑此文件以匹配你的 bot 消息格式，无需改动 Python 代码",
+  "strategy": "regex",
+  "fields": [
+    {
+      "_comment": "timestamp 和 message_id 是内置虚拟字段，直接使用即可",
+      "name": "timestamp",
+      "pattern": ""
+    },
+    {
+      "name": "message_id",
+      "pattern": ""
+    },
+    {
+      "_comment": "以下为示例字段，根据实际 bot 消息格式修改 pattern",
+      "name": "symbol",
+      "pattern": "(?:Symbol|币种|标的)[：:：]\\s*(\\S+)",
+      "group": 1,
+      "required": false,
+      "default": ""
+    },
+    {
+      "name": "action",
+      "pattern": "(BUY|SELL|买入|卖出|做多|做空)",
+      "group": 1,
+      "required": false,
+      "default": ""
+    },
+    {
+      "name": "price",
+      "pattern": "(?:Price|价格|入场)[：:：]\\s*([\\d,.]+)",
+      "group": 1,
+      "type": "float",
+      "required": false,
+      "default": ""
+    },
+    {
+      "name": "amount",
+      "pattern": "(?:Amount|数量|仓位)[：:：]\\s*([\\d,.]+)",
+      "group": 1,
+      "type": "float",
+      "required": false,
+      "default": ""
+    },
+    {
+      "name": "note",
+      "pattern": "(?:Note|备注|说明)[：:：]\\s*(.+?)(?:\\n|$)",
+      "group": 1,
+      "required": false,
+      "default": ""
+    }
+  ],
+  "row_order": ["timestamp", "message_id", "symbol", "action", "price", "amount", "note"]
+}
