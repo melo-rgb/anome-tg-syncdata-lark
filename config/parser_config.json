@@ -1,54 +1,153 @@
 {
-  "_comment": "编辑此文件以匹配你的 bot 消息格式，无需改动 Python 代码",
+  "_comment": "根据实际 bot 消息格式定制的解析规则",
   "strategy": "regex",
   "fields": [
     {
-      "_comment": "timestamp 和 message_id 是内置虚拟字段，直接使用即可",
       "name": "timestamp",
       "pattern": ""
     },
     {
-      "name": "message_id",
-      "pattern": ""
-    },
-    {
-      "_comment": "以下为示例字段，根据实际 bot 消息格式修改 pattern",
-      "name": "symbol",
-      "pattern": "(?:Symbol|币种|标的)[：:：]\\s*(\\S+)",
+      "name": "btg_visitors",
+      "_comment": "BTG 链接访问用户数：2,951",
+      "pattern": "BTG 链接访问用户数[：:]\\s*([\\d,]+)",
       "group": 1,
-      "required": false,
+      "type": "int",
+      "required": true,
       "default": ""
     },
     {
-      "name": "action",
-      "pattern": "(BUY|SELL|买入|卖出|做多|做空)",
+      "name": "btg_tiktok",
+      "_comment": "渠道细分 tiktok",
+      "pattern": "tiktok\\s+([\\d,]+)",
       "group": 1,
+      "type": "int",
       "required": false,
-      "default": ""
+      "default": 0
     },
     {
-      "name": "price",
-      "pattern": "(?:Price|价格|入场)[：:：]\\s*([\\d,.]+)",
+      "name": "btg_fb",
+      "_comment": "渠道细分 fb",
+      "pattern": "\\bfb\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "btg_not_set",
+      "_comment": "渠道细分 (not set)",
+      "pattern": "\\(not set\\)\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "btg_twitter",
+      "_comment": "渠道细分 twitter",
+      "pattern": "twitter\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "btg_direct",
+      "_comment": "渠道细分 (direct)",
+      "pattern": "\\(direct\\)\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "btg_mfacebook",
+      "_comment": "渠道细分 m.facebook.com",
+      "pattern": "m\\.facebook\\.com\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "btg_data_not_available",
+      "_comment": "渠道细分 (data not available)",
+      "pattern": "\\(data not available\\)\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "btg_an",
+      "_comment": "渠道细分 an，用竖线定位避免误匹配",
+      "pattern": "\\|\\s*an\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "btg_ig",
+      "_comment": "渠道细分 ig，用竖线定位避免误匹配",
+      "pattern": "\\|\\s*ig\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "btg_reg_total",
+      "_comment": "注册用户数 总计",
+      "pattern": "总计\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "btg_reg_4h",
+      "_comment": "注册用户数 近4小时新增",
+      "pattern": "近4小时新增\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "btg_deposit",
+      "_comment": "入金总量（取数字部分，去掉 USDT）",
+      "pattern": "BTG 入金总量[：:]\\s*([\\d,.]+)\\s*USDT",
       "group": 1,
       "type": "float",
       "required": false,
-      "default": ""
+      "default": 0
     },
     {
-      "name": "amount",
-      "pattern": "(?:Amount|数量|仓位)[：:：]\\s*([\\d,.]+)",
+      "name": "btg_address_users",
+      "_comment": "有地址用户数：4 / 23，只取分子",
+      "pattern": "BTG 有地址用户数[：:]\\s*(\\d+)\\s*/",
       "group": 1,
-      "type": "float",
+      "type": "int",
       "required": false,
-      "default": ""
-    },
-    {
-      "name": "note",
-      "pattern": "(?:Note|备注|说明)[：:：]\\s*(.+?)(?:\\n|$)",
-      "group": 1,
-      "required": false,
-      "default": ""
+      "default": 0
     }
   ],
-  "row_order": ["timestamp", "message_id", "symbol", "action", "price", "amount", "note"]
+  "row_order": [
+    "timestamp",
+    "btg_visitors",
+    "btg_tiktok",
+    "btg_fb",
+    "btg_not_set",
+    "btg_twitter",
+    "btg_direct",
+    "btg_mfacebook",
+    "btg_data_not_available",
+    "btg_an",
+    "btg_ig",
+    "btg_reg_total",
+    "btg_reg_4h",
+    "btg_deposit",
+    "btg_address_users"
+  ]
 }
