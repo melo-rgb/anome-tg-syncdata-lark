@@ -31,8 +31,8 @@ def main():
 
     lark_app_id = require_env("LARK_APP_ID")
     lark_app_secret = require_env("LARK_APP_SECRET")
-    lark_wiki_node_token = require_env("LARK_WIKI_NODE_TOKEN")  # SEDkw5tyciBmIdkTGSPlBQsqgm3
-    lark_table_id = require_env("LARK_TABLE_ID")                # tbl29NdWBL242JmD
+    lark_wiki_node_token = require_env("LARK_WIKI_NODE_TOKEN")  
+    lark_table_id = require_env("LARK_TABLE_ID")                
 
     # ── Load state ──────────────────────────────────────────────────────────
     last_id = state.load_last_id()
@@ -74,15 +74,27 @@ def main():
 
     print(f"[parser] {len(records)} record(s) parsed from {len(messages)} message(s)")
 
-    # ── Write to Lark Bitable ───────────────────────────────────────────────
+    # ── Write to Lark Bitable (with dedup) ─────────────────────────────────
+    writer = LarkWriter(
+        app_id=lark_app_id,
+        app_secret=lark_app_secret,
+        wiki_node_token=lark_wiki_node_token,
+        table_id=lark_table_id,
+    )
+
     if records:
-        writer = LarkWriter(
-            app_id=lark_app_id,
-            app_secret=lark_app_secret,
-            wiki_node_token=lark_wiki_node_token,
-            table_id=lark_table_id,
-        )
-        writer.append_records(records)
+        existing_ts = writer.get_recent_timestamps(field_name="日期", n=20)
+        new_records = [
+            r for r in records
+            if r["fields"].get("日期") not in existing_ts
+        ]
+        skipped = len(records) - len(new_records)
+        if skipped:
+            print(f"[dedup] Skipped {skipped} duplicate record(s)")
+        if new_records:
+            writer.append_records(new_records)
+        else:
+            print("[lark] All records already exist, nothing to write.")
     else:
         print("[lark] No records to write.")
 
