@@ -6,6 +6,7 @@
 注意：此脚本只能在本地交互式终端运行，不能在 CI 环境中运行。
 """
 
+import asyncio
 import os
 import sys
 
@@ -16,10 +17,10 @@ def main():
         sys.exit(1)
 
     try:
-        from telethon.sync import TelegramClient
+        from telethon import TelegramClient
         from telethon.sessions import StringSession
     except ImportError:
-        print("请先安装依赖：pip install telethon", file=sys.stderr)
+        print("请先安装依赖：python -m pip install telethon", file=sys.stderr)
         sys.exit(1)
 
     print("=" * 60)
@@ -36,11 +37,15 @@ def main():
         sys.exit(1)
 
     print("\n正在连接 Telegram...")
-    client = TelegramClient(StringSession(), int(api_id), api_hash)
 
-    with client:
-        client.start(phone=phone)
+    async def _generate():
+        client = TelegramClient(StringSession(), int(api_id), api_hash)
+        await client.start(phone=phone)
         session_string = client.session.save()
+        await client.disconnect()
+        return session_string
+
+    session_string = asyncio.run(_generate())
 
     print()
     print("=" * 60)
