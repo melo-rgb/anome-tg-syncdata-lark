@@ -43,8 +43,8 @@ jobs:
           # Variables（在 GitHub repo Settings → Variables → Actions 中添加）
           TG_GROUP_ID: ${{ vars.TG_GROUP_ID }}
           BOT_USERNAME: ${{ vars.BOT_USERNAME }}
-          LARK_SPREADSHEET_TOKEN: ${{ vars.LARK_SPREADSHEET_TOKEN }}
-          LARK_SHEET_ID: ${{ vars.LARK_SHEET_ID }}
+          LARK_WIKI_NODE_TOKEN: ${{ vars.LARK_WIKI_NODE_TOKEN }}
+          LARK_TABLE_ID: ${{ vars.LARK_TABLE_ID }}
         run: python main.py
 
       - name: Commit updated state
