@@ -4,6 +4,7 @@
   "field_labels": {
     "timestamp":                  "日期",
     "btgvn_visitors":             "BTG VN链接访问用户数",
+    "btgvn_visitors_today":       "BTG VN链接今日访问用户数",
     "btgvn_tiktok":               "BTG VN渠道细分tiktok",
     "btgvn_fb":                   "BTG VN渠道细分fb",
     "btgvn_not_set":              "BTG VN渠道细分not set",
@@ -17,7 +18,7 @@
     "btgvn_facebook_com":         "BTG VN渠道细分facebook.com",
     "btgvn_google":               "BTG VN渠道细分google",
     "btgvn_reg_total":            "BTG VN注册用户数总计",
-    "btgvn_reg_24h":              "BTG VN注册用户数近24小时新增",
+    "btgvn_reg_24h":              "BTG VN注册用户数近4小时新增",
     "btgvn_deposit":              "BTG VN入金总量",
     "btgvn_address_users":        "BTG VN有地址用户数"
   },
@@ -33,6 +34,15 @@
       "type": "int",
       "required": true,
       "default": ""
+    },
+    {
+      "name": "btgvn_visitors_today",
+      "_comment": "BTG VN 链接访问用户数：6,082（今日 1,847）",
+      "pattern": "BTG VN 链接访问用户数[：:][^（]*（今日\\s*([\\d,]+)）",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
     },
     {
       "name": "btgvn_tiktok",
@@ -167,6 +177,7 @@
   "row_order": [
     "timestamp",
     "btgvn_visitors",
+    "btgvn_visitors_today",
     "btgvn_tiktok",
     "btgvn_fb",
     "btgvn_not_set",
