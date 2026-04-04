@@ -50,6 +50,8 @@ jobs:
           BTGVN_LARK_TABLE_ID: ${{ vars.BTGVN_LARK_TABLE_ID }}
           AD_LARK_WIKI_NODE_TOKEN: ${{ vars.AD_LARK_WIKI_NODE_TOKEN }}
           AD_LARK_TABLE_ID: ${{ vars.AD_LARK_TABLE_ID }}
+          KOL_LARK_WIKI_NODE_TOKEN: ${{ vars.KOL_LARK_WIKI_NODE_TOKEN }}
+          KOL_LARK_TABLE_ID: ${{ vars.KOL_LARK_TABLE_ID }}
         run: python main.py
 
       - name: Commit updated state
