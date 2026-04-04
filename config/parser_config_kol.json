@@ -11,7 +11,7 @@
     "kol_reg_total":      "KOL 注册用户数",
     "kol_reg_4h":         "KOL 注册用户数近4小时新增",
     "kol_deposit":        "KOL 入金总量",
-    "kol_address_users":  "AD 有地址用户数"
+    "kol_address_users":  "KOL 有地址用户数"
   },
   "fields": [
     {
