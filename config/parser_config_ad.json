@@ -5,6 +5,7 @@
     "timestamp":          "日期",
     "ad_visitors":        "AD 链接访问用户数",
     "ad_visitors_today":  "AD 链接今日访问用户数",
+    "ad_fb":              "AD 渠道细分fb",
     "ad_not_set":         "AD 渠道细分Not Set",
     "ad_twitter":         "AD 渠道细分twitter",
     "ad_facebook_com":    "AD 渠道细分facebook.com",
@@ -31,6 +32,14 @@
     {
       "name": "ad_visitors_today",
       "pattern": "AD 链接访问用户数[：:][^（]*（今日\\s*([\\d,]+)）",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "ad_fb",
+      "pattern": "\\bfb\\s+([\\d,]+)",
       "group": 1,
       "type": "int",
       "required": false,
@@ -106,6 +115,7 @@
     "timestamp",
     "ad_visitors",
     "ad_visitors_today",
+    "ad_fb",
     "ad_not_set",
     "ad_twitter",
     "ad_facebook_com",
