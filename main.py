@@ -48,7 +48,7 @@ def build_targets(lark_app_id: str, lark_app_secret: str) -> list:
             "table_id": opt_env("BTGVN_LARK_TABLE_ID"),
         },
         {
-            "name": "AD",
+            "name": "X",
             "parser_config": "config/parser_config_ad.json",
             "wiki_node_token": opt_env("AD_LARK_WIKI_NODE_TOKEN"),
             "table_id": opt_env("AD_LARK_TABLE_ID"),
