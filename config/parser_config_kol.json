@@ -1,17 +1,19 @@
 {
-  "_comment": "KOL 数据播报解析规则",
+  "_comment": "Other数据播报解析规则",
   "strategy": "regex",
   "field_labels": {
     "timestamp":          "日期",
-    "kol_visitors":       "KOL 链接访问用户数",
-    "kol_visitors_today": "KOL 链接今日访问用户数",
-    "kol_twitter":        "KOL 渠道细分twitter",
-    "kol_not_set":        "KOL 渠道细分not set",
-    "kol_tco":            "KOL 渠道细分t.co",
-    "kol_reg_total":      "KOL 注册用户数",
-    "kol_reg_4h":         "KOL 注册用户数近4小时新增",
-    "kol_deposit":        "KOL 入金总量",
-    "kol_address_users":  "KOL 有地址用户数"
+    "kol_visitors":       "Other链接访问用户数",
+    "kol_visitors_today": "Other链接今日访问用户数",
+    "kol_twitter":        "Other渠道细分twitter",
+    "kol_not_set":        "Other渠道细分not set",
+    "kol_direct":         "Other 渠道细分direct",
+    "kol_tco":            "Other渠道细分t.co",
+    "kol_web_telegram":   "Other 渠道细分web.telegram.org",
+    "kol_reg_total":      "Other注册用户数",
+    "kol_reg_4h":         "Other注册用户数近4小时新增",
+    "kol_deposit":        "Other入金总量",
+    "kol_address_users":  "Other有地址用户数"
   },
   "fields": [
     {
@@ -20,8 +22,8 @@
     },
     {
       "name": "kol_visitors",
-      "_comment": "KOL 链接访问用户数：5（今日 5）",
-      "pattern": "KOL 链接访问用户数[：:]\\s*([\\d,]+)",
+      "_comment": "Other链接访问用户数：5（今日 5）",
+      "pattern": "Other链接访问用户数[：:]\\s*([\\d,]+)",
       "group": 1,
       "type": "int",
       "required": true,
@@ -29,7 +31,7 @@
     },
     {
       "name": "kol_visitors_today",
-      "pattern": "KOL 链接访问用户数[：:][^（]*（今日\\s*([\\d,]+)）",
+      "pattern": "Other链接访问用户数[：:][^（]*（今日\\s*([\\d,]+)）",
       "group": 1,
       "type": "int",
       "required": false,
@@ -52,8 +54,24 @@
       "default": 0
     },
     {
+      "name": "kol_direct",
+      "pattern": "\\(direct\\)\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
       "name": "kol_tco",
       "pattern": "t\\.co\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "kol_web_telegram",
+      "pattern": "web\\.telegram\\.org\\s+([\\d,]+)",
       "group": 1,
       "type": "int",
       "required": false,
@@ -77,7 +95,7 @@
     },
     {
       "name": "kol_deposit",
-      "pattern": "KOL 入金总量[：:]\\s*([\\d,.]+)\\s*USDT",
+      "pattern": "Other入金总量[：:]\\s*([\\d,.]+)\\s*USDT",
       "group": 1,
       "type": "float",
       "required": false,
@@ -85,7 +103,7 @@
     },
     {
       "name": "kol_address_users",
-      "pattern": "KOL 有地址用户数[：:]\\s*(\\d+)\\s*/",
+      "pattern": "Other有地址用户数[：:]\\s*(\\d+)\\s*/",
       "group": 1,
       "type": "int",
       "required": false,
@@ -98,7 +116,9 @@
     "kol_visitors_today",
     "kol_twitter",
     "kol_not_set",
+    "kol_direct",
     "kol_tco",
+    "kol_web_telegram",
     "kol_reg_total",
     "kol_reg_4h",
     "kol_deposit",
