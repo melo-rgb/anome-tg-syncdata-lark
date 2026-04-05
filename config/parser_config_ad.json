@@ -3,17 +3,17 @@
   "strategy": "regex",
   "field_labels": {
     "timestamp":          "日期",
-    "ad_visitors":        "AD 链接访问用户数",
-    "ad_visitors_today":  "AD 链接今日访问用户数",
-    "ad_fb":              "AD 渠道细分fb",
-    "ad_not_set":         "AD 渠道细分Not Set",
-    "ad_twitter":         "AD 渠道细分twitter",
-    "ad_facebook_com":    "AD 渠道细分facebook.com",
-    "ad_mfacebook":       "AD 渠道细分m.facebook.com",
-    "ad_reg_total":       "AD 注册用户数",
-    "ad_reg_4h":          "AD 注册用户数近4小时新增",
-    "ad_deposit":         "AD 入金总量",
-    "ad_address_users":   "AD 有地址用户数"
+    "ad_visitors":        "X 链接访问用户数",
+    "ad_visitors_today":  "X 链接今日访问用户数",
+    "ad_fb":              "X 渠道细分fb",
+    "ad_not_set":         "X 渠道细分Not Set",
+    "ad_twitter":         "X 渠道细分twitter",
+    "ad_facebook_com":    "X 渠道细分facebook.com",
+    "ad_mfacebook":       "X 渠道细分m.facebook.com",
+    "ad_reg_total":       "X 注册用户数",
+    "ad_reg_4h":          "X 注册用户数近4小时新增",
+    "ad_deposit":         "X 入金总量",
+    "ad_address_users":   "X 有地址用户数"
   },
   "fields": [
     {
