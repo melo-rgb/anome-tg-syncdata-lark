@@ -54,7 +54,7 @@ def build_targets(lark_app_id: str, lark_app_secret: str) -> list:
             "table_id": opt_env("AD_LARK_TABLE_ID"),
         },
         {
-            "name": "KOL",
+            "name": "Other",
             "parser_config": "config/parser_config_kol.json",
             "wiki_node_token": opt_env("KOL_LARK_WIKI_NODE_TOKEN"),
             "table_id": opt_env("KOL_LARK_TABLE_ID"),
