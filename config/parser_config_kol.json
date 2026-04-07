@@ -23,7 +23,7 @@
     {
       "name": "kol_visitors",
       "_comment": "Other 链接访问用户数：5（今日 5）",
-      "pattern": "Other 链接访问用户数[：:]\\s*([\\d,]+)",
+      "pattern": "Other\\s*链接访问用户数[：:]\\s*([\\d,]+)",
       "group": 1,
       "type": "int",
       "required": true,
@@ -31,7 +31,7 @@
     },
     {
       "name": "kol_visitors_today",
-      "pattern": "Other 链接访问用户数[：:][^（]*（今日\\s*([\\d,]+)）",
+      "pattern": "Other\\s*链接访问用户数[：:][^（]*（今日\\s*([\\d,]+)）",
       "group": 1,
       "type": "int",
       "required": false,
@@ -95,7 +95,7 @@
     },
     {
       "name": "kol_deposit",
-      "pattern": "Other 入金总量[：:]\\s*([\\d,.]+)\\s*USDT",
+      "pattern": "Other\\s*入金总量[：:]\\s*([\\d,.]+)\\s*USDT",
       "group": 1,
       "type": "float",
       "required": false,
@@ -103,7 +103,7 @@
     },
     {
       "name": "kol_address_users",
-      "pattern": "Other 有地址用户数[：:]\\s*(\\d+)\\s*/",
+      "pattern": "Other\\s*有地址用户数[：:]\\s*(\\d+)\\s*/",
       "group": 1,
       "type": "int",
       "required": false,
