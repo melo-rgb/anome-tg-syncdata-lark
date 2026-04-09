@@ -153,7 +153,7 @@
     {
       "name": "btg_address_users",
       "_comment": "有地址用户数：4 / 23，只取分子",
-      "pattern": "BTG 有地址用户数[：:]\\s*(\\d+)\\s*/",
+      "pattern": "BTG 有地址用户数[：:]\\s*([\\d,]+)\\s*/",
       "group": 1,
       "type": "int",
       "required": false,
