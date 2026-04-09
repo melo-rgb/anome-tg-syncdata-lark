@@ -103,7 +103,7 @@
     },
     {
       "name": "kol_address_users",
-      "pattern": "Other\\s*有地址用户数[：:]\\s*(\\d+)\\s*/",
+      "pattern": "Other\\s*有地址用户数[：:]\\s*([\\d,]+)\\s*/",
       "group": 1,
       "type": "int",
       "required": false,
