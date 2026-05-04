@@ -4,7 +4,7 @@
 
 ## 工作原理
 
-1. GitHub Actions 定时触发（默认每 30 分钟）
+1. GitHub Actions 定时触发（默认每天 6 次，每 4 小时一次）
 2. 用 Telethon 读取 TG 群组中新的 bot 消息
 3. 用正则规则解析消息内容
 4. 将解析结果追加到飞书表格
@@ -58,8 +58,14 @@ python generate_session.py
 |------|--------|------|
 | `TG_GROUP_ID` | `-1001234567890` | 群组 ID（负数）或 `@username` |
 | `BOT_USERNAME` | `my_signal_bot` | 只读此 bot 的消息（留空则读所有人） |
-| `LARK_SPREADSHEET_TOKEN` | `shtXXXXXXXX` | 飞书表格 token |
-| `LARK_SHEET_ID` | `Sheet1` | 工作表名称 |
+| `LARK_WIKI_NODE_TOKEN` | `wikcn...` | BTG 飞书多维表格 wiki node token |
+| `LARK_TABLE_ID` | `tbl...` | BTG 多维表格 table ID |
+| `BTGVN_LARK_WIKI_NODE_TOKEN` | `wikcn...` | BTG VN 飞书多维表格 wiki node token（可选） |
+| `BTGVN_LARK_TABLE_ID` | `tbl...` | BTG VN 多维表格 table ID（可选） |
+| `AD_LARK_WIKI_NODE_TOKEN` | `wikcn...` | X 飞书多维表格 wiki node token（可选） |
+| `AD_LARK_TABLE_ID` | `tbl...` | X 多维表格 table ID（可选） |
+| `KOL_LARK_WIKI_NODE_TOKEN` | `wikcn...` | Other 飞书多维表格 wiki node token（可选） |
+| `KOL_LARK_TABLE_ID` | `tbl...` | Other 多维表格 table ID（可选） |
 
 > 获取 TG 群组 ID：将 bot `@userinfobot` 加入群组，发送任意消息即可看到群组 ID
 
@@ -106,7 +112,8 @@ Note: 突破关键阻力位
 
 ```yaml
 schedule:
-  - cron: '*/30 * * * *'  # 每 30 分钟
+  - cron: '5 17,21,1,5,9,13 * * *' # 每 4 小时一次
+  # - cron: '*/30 * * * *'  # 每 30 分钟
   # - cron: '0 * * * *'   # 每小时
   # - cron: '0 */6 * * *' # 每 6 小时
 ```
