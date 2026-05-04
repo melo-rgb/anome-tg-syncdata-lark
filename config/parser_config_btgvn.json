@@ -29,7 +29,7 @@
     },
     {
       "name": "btgvn_visitors",
-      "pattern": "BTG VN 链接访问用户数[：:]\\s*([\\d,]+)",
+      "pattern": "BTG\\s*VN\\s*链接访问用户数[：:]\\s*([\\d,]+)",
       "group": 1,
       "type": "int",
       "required": true,
@@ -38,7 +38,7 @@
     {
       "name": "btgvn_visitors_today",
       "_comment": "BTG VN 链接访问用户数：6,082（今日 1,847）",
-      "pattern": "BTG VN 链接访问用户数[：:][^（]*（今日\\s*([\\d,]+)）",
+      "pattern": "BTG\\s*VN\\s*链接访问用户数[：:][^（(]*[（(]今日\\s*([\\d,]+)[）)]",
       "group": 1,
       "type": "int",
       "required": false,
@@ -151,7 +151,7 @@
     },
     {
       "name": "btgvn_reg_24h",
-      "pattern": "近24小时新增\\s+([\\d,]+)",
+      "pattern": "近(?:4|24)小时新增\\s+([\\d,]+)",
       "group": 1,
       "type": "int",
       "required": false,
@@ -159,7 +159,7 @@
     },
     {
       "name": "btgvn_deposit",
-      "pattern": "BTG VN 入金总量[：:]\\s*([\\d,.]+)\\s*USDT",
+      "pattern": "BTG\\s*VN\\s*入金总量[：:]\\s*([\\d,.]+)\\s*USDT",
       "group": 1,
       "type": "float",
       "required": false,
@@ -167,7 +167,7 @@
     },
     {
       "name": "btgvn_address_users",
-      "pattern": "BTG VN 有地址用户数[：:]\\s*([\\d,]+)\\s*/",
+      "pattern": "BTG\\s*VN\\s*有地址用户数[：:]\\s*([\\d,]+)\\s*/",
       "group": 1,
       "type": "int",
       "required": false,
