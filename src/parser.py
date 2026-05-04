@@ -21,6 +21,7 @@ class MessageParser:
         self.fields = self.config.get("fields", [])
         self.row_order = self.config.get("row_order", [])
         self.strategy = self.config.get("strategy", "regex")
+        self.last_skip_reason = ""
 
     def parse(self, message) -> Optional[Dict[str, Any]]:
         """
@@ -28,7 +29,9 @@ class MessageParser:
         Returns a dict of field_name -> value, or None if the message doesn't match.
         """
         text = message.text or message.message or ""
+        self.last_skip_reason = ""
         if not text:
+            self.last_skip_reason = "empty message text"
             return None
 
         if self.strategy == "regex":
@@ -76,6 +79,7 @@ class MessageParser:
                 result[name] = _cast(raw_value, field_type)
             else:
                 if required:
+                    self.last_skip_reason = f"required field '{name}' did not match pattern: {pattern}"
                     return None  # Required field missing — skip this message
                 result[name] = default
 
