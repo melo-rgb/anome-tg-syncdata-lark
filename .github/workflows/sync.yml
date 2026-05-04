@@ -6,6 +6,23 @@ on:
     # UTC:   17:05 / 21:05 / 01:05 / 05:05 / 09:05 / 13:05
     - cron: '5 17,21,1,5,9,13 * * *'
   workflow_dispatch:  # 允许从 GitHub UI 手动触发
+    inputs:
+      backfill_from_message_id:
+        description: '回补起始 Telegram message id（包含；留空则正常同步）'
+        required: false
+        type: string
+      backfill_to_message_id:
+        description: '回补结束 Telegram message id（包含；留空则不限制上限）'
+        required: false
+        type: string
+      fetch_limit:
+        description: '本次最多拉取多少条消息'
+        required: false
+        type: string
+      lark_dedup_recent_n:
+        description: '每张表读取多少条最近记录用于按日期去重'
+        required: false
+        type: string
 
 jobs:
   sync:
@@ -44,7 +61,10 @@ jobs:
           # Variables（在 GitHub repo Settings → Variables → Actions 中添加）
           TG_GROUP_ID: ${{ vars.TG_GROUP_ID }}
           BOT_USERNAME: ${{ vars.BOT_USERNAME }}
-          TG_FETCH_LIMIT: ${{ vars.TG_FETCH_LIMIT }}
+          TG_FETCH_LIMIT: ${{ inputs.fetch_limit || vars.TG_FETCH_LIMIT }}
+          BACKFILL_FROM_MESSAGE_ID: ${{ inputs.backfill_from_message_id }}
+          BACKFILL_TO_MESSAGE_ID: ${{ inputs.backfill_to_message_id }}
+          LARK_DEDUP_RECENT_N: ${{ inputs.lark_dedup_recent_n || vars.LARK_DEDUP_RECENT_N }}
           LARK_WIKI_NODE_TOKEN: ${{ vars.LARK_WIKI_NODE_TOKEN }}
           LARK_TABLE_ID: ${{ vars.LARK_TABLE_ID }}
           BTGVN_LARK_WIKI_NODE_TOKEN: ${{ vars.BTGVN_LARK_WIKI_NODE_TOKEN }}
