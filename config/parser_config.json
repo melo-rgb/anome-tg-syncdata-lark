@@ -27,7 +27,7 @@
     {
       "name": "btg_visitors",
       "_comment": "BTG 链接访问用户数：2,951",
-      "pattern": "BTG 链接访问用户数[：:]\\s*([\\d,]+)",
+      "pattern": "BTG\\s*链接访问用户数[：:]\\s*([\\d,]+)",
       "group": 1,
       "type": "int",
       "required": true,
@@ -36,7 +36,7 @@
     {
       "name": "btg_visitors_today",
       "_comment": "BTG 链接访问用户数：10,898（今日 8）",
-      "pattern": "BTG 链接访问用户数[：:][^（]*（今日\\s*([\\d,]+)）",
+      "pattern": "BTG\\s*链接访问用户数[：:][^（(]*[（(]今日\\s*([\\d,]+)[）)]",
       "group": 1,
       "type": "int",
       "required": false,
@@ -144,7 +144,7 @@
     {
       "name": "btg_deposit",
       "_comment": "入金总量（取数字部分，去掉 USDT）",
-      "pattern": "BTG 入金总量[：:]\\s*([\\d,.]+)\\s*USDT",
+      "pattern": "BTG\\s*入金总量[：:]\\s*([\\d,.]+)\\s*USDT",
       "group": 1,
       "type": "float",
       "required": false,
@@ -153,7 +153,7 @@
     {
       "name": "btg_address_users",
       "_comment": "有地址用户数：4 / 23，只取分子",
-      "pattern": "BTG 有地址用户数[：:]\\s*([\\d,]+)\\s*/",
+      "pattern": "BTG\\s*有地址用户数[：:]\\s*([\\d,]+)\\s*/",
       "group": 1,
       "type": "int",
       "required": false,
