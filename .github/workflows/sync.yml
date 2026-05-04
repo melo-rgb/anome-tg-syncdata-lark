@@ -44,6 +44,7 @@ jobs:
           # Variables（在 GitHub repo Settings → Variables → Actions 中添加）
           TG_GROUP_ID: ${{ vars.TG_GROUP_ID }}
           BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+          TG_FETCH_LIMIT: ${{ vars.TG_FETCH_LIMIT }}
           LARK_WIKI_NODE_TOKEN: ${{ vars.LARK_WIKI_NODE_TOKEN }}
           LARK_TABLE_ID: ${{ vars.LARK_TABLE_ID }}
           BTGVN_LARK_WIKI_NODE_TOKEN: ${{ vars.BTGVN_LARK_WIKI_NODE_TOKEN }}
