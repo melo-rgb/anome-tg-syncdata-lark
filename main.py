@@ -86,7 +86,7 @@ def build_targets(lark_app_id: str, lark_app_secret: str) -> list:
     return targets
 
 
-def sync_target(target: dict, messages: list) -> None:
+def sync_target(target: dict, messages: list, dedup_recent_n: int = 500) -> None:
     name = target["name"]
     parser = MessageParser(config_path=target["parser_config"])
     records = []
@@ -112,7 +112,7 @@ def sync_target(target: dict, messages: list) -> None:
         return
 
     writer: LarkWriter = target["writer"]
-    existing_ts = writer.get_recent_timestamps(field_name="日期", n=20)
+    existing_ts = writer.get_recent_timestamps(field_name="日期", n=dedup_recent_n)
     new_records = [r for r in records if r["fields"].get("日期") not in existing_ts]
     skipped = len(records) - len(new_records)
     if skipped:
@@ -131,6 +131,14 @@ def main():
     group_id = require_env("TG_GROUP_ID")
     bot_username = opt_env("BOT_USERNAME")
     fetch_limit = opt_int_env("TG_FETCH_LIMIT", 200)
+    dedup_recent_n = opt_int_env("LARK_DEDUP_RECENT_N", 500)
+    backfill_from_id = opt_int_env("BACKFILL_FROM_MESSAGE_ID", 0)
+    backfill_to_id = opt_int_env("BACKFILL_TO_MESSAGE_ID", 0)
+
+    is_backfill = backfill_from_id > 0 or backfill_to_id > 0
+    if backfill_from_id and backfill_to_id and backfill_to_id < backfill_from_id:
+        print("[error] BACKFILL_TO_MESSAGE_ID must be greater than or equal to BACKFILL_FROM_MESSAGE_ID", file=sys.stderr)
+        sys.exit(1)
 
     lark_app_id = require_env("LARK_APP_ID")
     lark_app_secret = require_env("LARK_APP_SECRET")
@@ -146,17 +154,24 @@ def main():
     print(f"[state] Last processed message ID: {last_id}")
 
     # ── Fetch new Telegram messages (once for all targets) ──────────────────
+    min_message_id = max(backfill_from_id - 1, 0) if is_backfill else last_id
+    max_message_id = backfill_to_id + 1 if backfill_to_id > 0 else None
+    mode = "backfill" if is_backfill else "sync"
+    range_text = f"min_id={min_message_id}"
+    if max_message_id:
+        range_text += f", max_id={max_message_id}"
     print(f"[telegram] Fetching messages from group '{group_id}'" +
           (f" by '{bot_username}'" if bot_username else "") +
-          f" (min_id={last_id}) ...")
+          f" ({mode}, {range_text}, limit={fetch_limit}) ...")
     messages = fetch_new_messages(
         session_string=session_string,
         api_id=api_id,
         api_hash=api_hash,
         group_id=group_id,
-        last_message_id=last_id,
+        last_message_id=min_message_id,
         bot_username=bot_username,
         limit=fetch_limit,
+        max_message_id=max_message_id,
     )
     print(f"[telegram] Fetched {len(messages)} new message(s)")
 
@@ -166,9 +181,14 @@ def main():
 
     # ── Sync each target ────────────────────────────────────────────────────
     for target in targets:
-        sync_target(target, messages)
+        sync_target(target, messages, dedup_recent_n=dedup_recent_n)
 
     # ── Save state ──────────────────────────────────────────────────────────
+    if is_backfill:
+        print("[state] Backfill mode: last_message_id.txt was not updated")
+        print("[done] Backfill complete.")
+        return
+
     newest_id = max(msg.id for msg in messages)
     state.save_last_id(newest_id)
     print(f"[state] Saved last message ID: {newest_id}")
