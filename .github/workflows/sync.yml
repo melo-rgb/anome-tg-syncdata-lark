@@ -1,4 +1,5 @@
 name: Sync Telegram to Lark
+run-name: Sync Telegram to Lark (${{ github.event_name }})
 
 on:
   schedule:
@@ -27,6 +28,9 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    concurrency:
+      group: telegram-lark-sync
+      cancel-in-progress: false
     permissions:
       contents: write  # 需要写权限以提交 last_message_id.txt
 
@@ -76,6 +80,7 @@ jobs:
         run: python main.py
 
       - name: Commit updated state
+        if: ${{ github.event_name != 'workflow_dispatch' || (inputs.backfill_from_message_id == '' && inputs.backfill_to_message_id == '') }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
