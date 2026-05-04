@@ -25,6 +25,17 @@ def opt_env(name: str) -> str:
     return os.environ.get(name, "").strip()
 
 
+def opt_int_env(name: str, default: int) -> int:
+    value = opt_env(name)
+    if not value:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        print(f"[config] Invalid integer for {name}: {value!r}; using {default}")
+        return default
+
+
 def build_targets(lark_app_id: str, lark_app_secret: str) -> list:
     """
     Define all sync targets. Each target needs:
@@ -79,14 +90,22 @@ def sync_target(target: dict, messages: list) -> None:
     name = target["name"]
     parser = MessageParser(config_path=target["parser_config"])
     records = []
+    unmatched = []
 
     for msg in messages:
         parsed = parser.parse(msg)
         if parsed is None:
+            if parser.last_skip_reason:
+                text = (msg.text or msg.message or "").replace("\n", " ")[:120]
+                unmatched.append((getattr(msg, "id", ""), parser.last_skip_reason, text))
             continue
         records.append(parser.to_record(parsed))
 
     print(f"[{name}] {len(records)} record(s) parsed from {len(messages)} message(s)")
+    for msg_id, reason, preview in unmatched[:3]:
+        print(f"[{name}] Unmatched message {msg_id}: {reason}; preview='{preview}'")
+    if len(unmatched) > 3:
+        print(f"[{name}] ... {len(unmatched) - 3} more unmatched message(s)")
 
     if not records:
         print(f"[{name}] No records to write.")
@@ -111,6 +130,7 @@ def main():
     api_hash = require_env("TG_API_HASH")
     group_id = require_env("TG_GROUP_ID")
     bot_username = opt_env("BOT_USERNAME")
+    fetch_limit = opt_int_env("TG_FETCH_LIMIT", 200)
 
     lark_app_id = require_env("LARK_APP_ID")
     lark_app_secret = require_env("LARK_APP_SECRET")
@@ -136,6 +156,7 @@ def main():
         group_id=group_id,
         last_message_id=last_id,
         bot_username=bot_username,
+        limit=fetch_limit,
     )
     print(f"[telegram] Fetched {len(messages)} new message(s)")
 
