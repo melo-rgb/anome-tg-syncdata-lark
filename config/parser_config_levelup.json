@@ -1,0 +1,339 @@
+{
+  "_comment": "LevelUp | ANOME ONE 任务数据播报解析规则",
+  "strategy": "regex",
+  "field_labels": {
+    "report_date": "日期",
+    "channel_visitors_today": "今日渠道访问用户数",
+    "channel_visitors_total": "渠道访问累计用户数",
+    "new_users_today": "今日新用户",
+    "total_users": "总用户量",
+    "task_users_today": "今日完成任务的用户",
+    "active_users_today": "今日活跃用户",
+    "task_new_common_1": "今日每阶段任务完成数新增第一期_通用",
+    "task_new_common_2": "今日每阶段任务完成数新增第二期_通用",
+    "task_new_common_3": "今日每阶段任务完成数新增第三期_通用",
+    "task_new_common_4": "今日每阶段任务完成数新增第四期_通用",
+    "task_new_common_5": "今日每阶段任务完成数新增第五期_通用",
+    "task_new_common_6": "今日每阶段任务完成数新增第六期_通用",
+    "task_new_vn_1": "今日每阶段任务完成数新增第一期_越南",
+    "task_new_vn_2": "今日每阶段任务完成数新增第二期_越南",
+    "task_new_vn_3": "今日每阶段任务完成数新增第三期_越南",
+    "task_new_vn_4": "今日每阶段任务完成数新增第四期_越南",
+    "task_total_common_1": "每阶段任务完成总数第一期_通用",
+    "task_total_common_2": "每阶段任务完成总数第二期_通用",
+    "task_total_common_3": "每阶段任务完成总数第三期_通用",
+    "task_total_common_4": "每阶段任务完成总数第四期_通用",
+    "task_total_common_5": "每阶段任务完成总数第五期_通用",
+    "task_total_common_6": "每阶段任务完成总数第六期_通用",
+    "task_total_vn_1": "每阶段任务完成总数第一期_越南",
+    "task_total_vn_2": "每阶段任务完成总数第二期_越南",
+    "task_total_vn_3": "每阶段任务完成总数第三期_越南",
+    "task_total_vn_4": "每阶段任务完成总数第四期_越南",
+    "beginner_claim_today": "今日完成新手领取任务量",
+    "beginner_claim_total": "今日完成新手领取任务总量",
+    "deposit_today": "伞下入金数量今日",
+    "deposit_total": "伞下入金数量总量",
+    "address_today": "伞下地址数量今日新增",
+    "address_total": "伞下地址数量总计"
+  },
+  "fields": [
+    {
+      "name": "report_date",
+      "pattern": "统计时间[：:]\\s*GMT\\+08:00\\s*(\\d{4}-\\d{2}-\\d{2})",
+      "group": 1,
+      "type": "date_ms",
+      "required": true
+    },
+    {
+      "name": "channel_visitors_today",
+      "pattern": "今日渠道访问用户数[：:]\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": true,
+      "default": ""
+    },
+    {
+      "name": "channel_visitors_total",
+      "pattern": "今日渠道访问用户数[：:][^（(]*[（(]\\s*累计\\s*([\\d,]+)\\s*[）)]",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "new_users_today",
+      "pattern": "今日新用户\\s*/\\s*总用户量[：:]\\s*([\\d,]+)\\s*/",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "total_users",
+      "pattern": "今日新用户\\s*/\\s*总用户量[：:]\\s*[\\d,]+\\s*/\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_users_today",
+      "pattern": "今日完成任务的用户[：:]\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "active_users_today",
+      "pattern": "今日活跃用户[：:]\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_new_common_1",
+      "pattern": "今日每阶段任务完成数新增[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]1:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_new_common_2",
+      "pattern": "今日每阶段任务完成数新增[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]2:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_new_common_3",
+      "pattern": "今日每阶段任务完成数新增[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]3:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_new_common_4",
+      "pattern": "今日每阶段任务完成数新增[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]4:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_new_common_5",
+      "pattern": "今日每阶段任务完成数新增[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]5:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_new_common_6",
+      "pattern": "今日每阶段任务完成数新增[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]6:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_new_vn_1",
+      "pattern": "今日每阶段任务完成数新增[：:][\\s\\S]*?\\[越南版\\][^\\n]*?[|\\s]1:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_new_vn_2",
+      "pattern": "今日每阶段任务完成数新增[：:][\\s\\S]*?\\[越南版\\][^\\n]*?[|\\s]2:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_new_vn_3",
+      "pattern": "今日每阶段任务完成数新增[：:][\\s\\S]*?\\[越南版\\][^\\n]*?[|\\s]3:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_new_vn_4",
+      "pattern": "今日每阶段任务完成数新增[：:][\\s\\S]*?\\[越南版\\][^\\n]*?[|\\s]4:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_total_common_1",
+      "pattern": "每阶段任务完成总数[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]1:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_total_common_2",
+      "pattern": "每阶段任务完成总数[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]2:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_total_common_3",
+      "pattern": "每阶段任务完成总数[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]3:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_total_common_4",
+      "pattern": "每阶段任务完成总数[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]4:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_total_common_5",
+      "pattern": "每阶段任务完成总数[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]5:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_total_common_6",
+      "pattern": "每阶段任务完成总数[：:][\\s\\S]*?\\[通用版\\][^\\n]*?[|\\s]6:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_total_vn_1",
+      "pattern": "每阶段任务完成总数[：:][\\s\\S]*?\\[越南版\\][^\\n]*?[|\\s]1:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_total_vn_2",
+      "pattern": "每阶段任务完成总数[：:][\\s\\S]*?\\[越南版\\][^\\n]*?[|\\s]2:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_total_vn_3",
+      "pattern": "每阶段任务完成总数[：:][\\s\\S]*?\\[越南版\\][^\\n]*?[|\\s]3:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "task_total_vn_4",
+      "pattern": "每阶段任务完成总数[：:][\\s\\S]*?\\[越南版\\][^\\n]*?[|\\s]4:\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "beginner_claim_today",
+      "pattern": "(?:今日完成新手领取任务量[：:]\\s*|新手领取任务[：:][^\\n]*?今日\\s*)([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "beginner_claim_total",
+      "pattern": "(?:今日完成新手领取任务总量[：:]\\s*|新手领取任务[：:][^\\n]*?(?:总计|总量)\\s*)([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "deposit_today",
+      "pattern": "伞下入金数量[：:]\\s*今日\\s*([\\d,.]+)\\s*USDT",
+      "group": 1,
+      "type": "float",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "deposit_total",
+      "pattern": "伞下入金数量[：:][^\\n]*?总计\\s*([\\d,.]+)\\s*USDT",
+      "group": 1,
+      "type": "float",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "address_today",
+      "pattern": "伞下地址数量[：:]\\s*今日新增\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "address_total",
+      "pattern": "伞下地址数量[：:][^\\n]*?总计\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    }
+  ],
+  "row_order": [
+    "report_date",
+    "channel_visitors_today",
+    "channel_visitors_total",
+    "new_users_today",
+    "total_users",
+    "task_users_today",
+    "active_users_today",
+    "task_new_common_1",
+    "task_new_common_2",
+    "task_new_common_3",
+    "task_new_common_4",
+    "task_new_common_5",
+    "task_new_common_6",
+    "task_new_vn_1",
+    "task_new_vn_2",
+    "task_new_vn_3",
+    "task_new_vn_4",
+    "task_total_common_1",
+    "task_total_common_2",
+    "task_total_common_3",
+    "task_total_common_4",
+    "task_total_common_5",
+    "task_total_common_6",
+    "task_total_vn_1",
+    "task_total_vn_2",
+    "task_total_vn_3",
+    "task_total_vn_4",
+    "beginner_claim_today",
+    "beginner_claim_total",
+    "deposit_today",
+    "deposit_total",
+    "address_today",
+    "address_total"
+  ]
+}

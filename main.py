@@ -36,11 +36,14 @@ def opt_int_env(name: str, default: int) -> int:
         return default
 
 
-def build_targets(lark_app_id: str, lark_app_secret: str) -> list:
+def build_targets(lark_app_id: str, lark_app_secret: str, default_group_id: str, default_bot_username: str) -> list:
     """
     Define all sync targets. Each target needs:
       - name: display name for logs
       - parser_config: path to parser config JSON
+      - group_id: Telegram group ID or username
+      - bot_username: optional sender filter
+      - state_file: path to last processed message ID
       - wiki_node_token: Lark wiki node token
       - table_id: Bitable table ID
     Targets with missing env vars are skipped automatically.
@@ -49,31 +52,52 @@ def build_targets(lark_app_id: str, lark_app_secret: str) -> list:
         {
             "name": "BTG",
             "parser_config": "config/parser_config.json",
+            "group_id": default_group_id,
+            "bot_username": default_bot_username,
+            "state_file": "data/last_message_id.txt",
             "wiki_node_token": opt_env("LARK_WIKI_NODE_TOKEN"),
             "table_id": opt_env("LARK_TABLE_ID"),
         },
         {
             "name": "BTG VN",
             "parser_config": "config/parser_config_btgvn.json",
+            "group_id": default_group_id,
+            "bot_username": default_bot_username,
+            "state_file": "data/last_message_id.txt",
             "wiki_node_token": opt_env("BTGVN_LARK_WIKI_NODE_TOKEN"),
             "table_id": opt_env("BTGVN_LARK_TABLE_ID"),
         },
         {
             "name": "X",
             "parser_config": "config/parser_config_ad.json",
+            "group_id": default_group_id,
+            "bot_username": default_bot_username,
+            "state_file": "data/last_message_id.txt",
             "wiki_node_token": opt_env("AD_LARK_WIKI_NODE_TOKEN"),
             "table_id": opt_env("AD_LARK_TABLE_ID"),
         },
         {
             "name": "Other",
             "parser_config": "config/parser_config_kol.json",
+            "group_id": default_group_id,
+            "bot_username": default_bot_username,
+            "state_file": "data/last_message_id.txt",
             "wiki_node_token": opt_env("KOL_LARK_WIKI_NODE_TOKEN"),
             "table_id": opt_env("KOL_LARK_TABLE_ID"),
+        },
+        {
+            "name": "LevelUp",
+            "parser_config": "config/parser_config_levelup.json",
+            "group_id": opt_env("LEVELUP_TG_GROUP_ID"),
+            "bot_username": opt_env("LEVELUP_BOT_USERNAME"),
+            "state_file": "data/last_message_id_levelup.txt",
+            "wiki_node_token": opt_env("LEVELUP_LARK_WIKI_NODE_TOKEN"),
+            "table_id": opt_env("LEVELUP_LARK_TABLE_ID"),
         },
     ]
     targets = []
     for t in candidates:
-        if t["wiki_node_token"] and t["table_id"]:
+        if t["group_id"] and t["wiki_node_token"] and t["table_id"]:
             t["writer"] = LarkWriter(
                 app_id=lark_app_id,
                 app_secret=lark_app_secret,
@@ -144,54 +168,62 @@ def main():
     lark_app_secret = require_env("LARK_APP_SECRET")
 
     # ── Build sync targets ──────────────────────────────────────────────────
-    targets = build_targets(lark_app_id, lark_app_secret)
+    targets = build_targets(lark_app_id, lark_app_secret, group_id, bot_username)
     if not targets:
         print("[error] No sync targets configured.", file=sys.stderr)
         sys.exit(1)
 
-    # ── Load state ──────────────────────────────────────────────────────────
-    last_id = state.load_last_id()
-    print(f"[state] Last processed message ID: {last_id}")
-
-    # ── Fetch new Telegram messages (once for all targets) ──────────────────
-    min_message_id = max(backfill_from_id - 1, 0) if is_backfill else last_id
-    max_message_id = backfill_to_id + 1 if backfill_to_id > 0 else None
-    mode = "backfill" if is_backfill else "sync"
-    range_text = f"min_id={min_message_id}"
-    if max_message_id:
-        range_text += f", max_id={max_message_id}"
-    print(f"[telegram] Fetching messages from group '{group_id}'" +
-          (f" by '{bot_username}'" if bot_username else "") +
-          f" ({mode}, {range_text}, limit={fetch_limit}) ...")
-    messages = fetch_new_messages(
-        session_string=session_string,
-        api_id=api_id,
-        api_hash=api_hash,
-        group_id=group_id,
-        last_message_id=min_message_id,
-        bot_username=bot_username,
-        limit=fetch_limit,
-        max_message_id=max_message_id,
-    )
-    print(f"[telegram] Fetched {len(messages)} new message(s)")
-
-    if not messages:
-        print("[done] No new messages. Exiting.")
-        return
-
-    # ── Sync each target ────────────────────────────────────────────────────
+    target_groups = {}
     for target in targets:
-        sync_target(target, messages, dedup_recent_n=dedup_recent_n)
+        key = (target["group_id"], target["bot_username"], target["state_file"])
+        target_groups.setdefault(key, []).append(target)
 
-    # ── Save state ──────────────────────────────────────────────────────────
+    # ── Fetch and sync per Telegram group ───────────────────────────────────
+    for (target_group_id, target_bot_username, state_file), group_targets in target_groups.items():
+        last_id = state.load_last_id(state_file)
+        target_names = ", ".join(t["name"] for t in group_targets)
+        print(f"[state] {state_file}: last processed message ID: {last_id} ({target_names})")
+
+        min_message_id = max(backfill_from_id - 1, 0) if is_backfill else last_id
+        max_message_id = backfill_to_id + 1 if backfill_to_id > 0 else None
+        mode = "backfill" if is_backfill else "sync"
+        range_text = f"min_id={min_message_id}"
+        if max_message_id:
+            range_text += f", max_id={max_message_id}"
+        print(f"[telegram] Fetching messages from group '{target_group_id}'" +
+              (f" by '{target_bot_username}'" if target_bot_username else "") +
+              f" for {target_names} ({mode}, {range_text}, limit={fetch_limit}) ...")
+        messages = fetch_new_messages(
+            session_string=session_string,
+            api_id=api_id,
+            api_hash=api_hash,
+            group_id=target_group_id,
+            last_message_id=min_message_id,
+            bot_username=target_bot_username,
+            limit=fetch_limit,
+            max_message_id=max_message_id,
+        )
+        print(f"[telegram] Fetched {len(messages)} message(s) for {target_names}")
+
+        if not messages:
+            print(f"[{target_names}] No new messages.")
+            continue
+
+        for target in group_targets:
+            sync_target(target, messages, dedup_recent_n=dedup_recent_n)
+
+        if is_backfill:
+            print(f"[state] Backfill mode: {state_file} was not updated")
+            continue
+
+        newest_id = max(msg.id for msg in messages)
+        state.save_last_id(newest_id, state_file)
+        print(f"[state] Saved {state_file}: {newest_id}")
+
     if is_backfill:
-        print("[state] Backfill mode: last_message_id.txt was not updated")
         print("[done] Backfill complete.")
         return
 
-    newest_id = max(msg.id for msg in messages)
-    state.save_last_id(newest_id)
-    print(f"[state] Saved last message ID: {newest_id}")
     print("[done] Sync complete.")
 
 

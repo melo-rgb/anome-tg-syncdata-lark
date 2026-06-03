@@ -8,7 +8,7 @@ No Python changes needed for common regex-based formats.
 import json
 import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "config", "parser_config.json")
@@ -117,6 +117,13 @@ def _cast(value: str, field_type: str) -> Any:
     elif field_type == "int":
         try:
             return int(value.replace(",", ""))
+        except ValueError:
+            return value
+    elif field_type == "date_ms":
+        try:
+            tz = timezone(timedelta(hours=8))
+            dt = datetime.strptime(value, "%Y-%m-%d").replace(tzinfo=tz)
+            return int(dt.timestamp() * 1000)
         except ValueError:
             return value
     return value

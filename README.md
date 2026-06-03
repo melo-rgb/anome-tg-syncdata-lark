@@ -58,6 +58,8 @@ python generate_session.py
 |------|--------|------|
 | `TG_GROUP_ID` | `-1001234567890` | 群组 ID（负数）或 `@username` |
 | `BOT_USERNAME` | `my_signal_bot` | 只读此 bot 的消息（留空则读所有人） |
+| `LEVELUP_TG_GROUP_ID` | `-1001234567890` | LevelUp / ANOME ONE 播报所在 TG 群组 ID |
+| `LEVELUP_BOT_USERNAME` | `levelup_bot` | 只读此 bot 的 LevelUp 消息（可选，留空则读群内所有消息） |
 | `LARK_WIKI_NODE_TOKEN` | `wikcn...` | BTG 飞书多维表格 wiki node token |
 | `LARK_TABLE_ID` | `tbl...` | BTG 多维表格 table ID |
 | `BTGVN_LARK_WIKI_NODE_TOKEN` | `wikcn...` | BTG VN 飞书多维表格 wiki node token（可选） |
@@ -66,6 +68,8 @@ python generate_session.py
 | `AD_LARK_TABLE_ID` | `tbl...` | X 多维表格 table ID（可选） |
 | `KOL_LARK_WIKI_NODE_TOKEN` | `wikcn...` | Other 飞书多维表格 wiki node token（可选） |
 | `KOL_LARK_TABLE_ID` | `tbl...` | Other 多维表格 table ID（可选） |
+| `LEVELUP_LARK_WIKI_NODE_TOKEN` | `wikcn...` | LevelUp / ANOME ONE 飞书多维表格 wiki node token（可选） |
+| `LEVELUP_LARK_TABLE_ID` | `tbl...` | LevelUp / ANOME ONE 多维表格 table ID（可选） |
 
 > 获取 TG 群组 ID：将 bot `@userinfobot` 加入群组，发送任意消息即可看到群组 ID
 
@@ -129,6 +133,6 @@ schedule:
 | `name` | 字段名，`timestamp`/`message_id`/`sender` 为内置虚拟字段 |
 | `pattern` | Python 正则表达式 |
 | `group` | 正则捕获组序号（0=整体匹配，1=第一个括号） |
-| `type` | 类型转换：`str`（默认）、`float`、`int` |
+| `type` | 类型转换：`str`（默认）、`float`、`int`、`date_ms`（将 `YYYY-MM-DD` 转为 GMT+08:00 日期毫秒时间戳） |
 | `required` | `true` 时若匹配失败则跳过整条消息 |
 | `default` | 匹配失败时的默认值 |

@@ -69,6 +69,8 @@ jobs:
           BACKFILL_FROM_MESSAGE_ID: ${{ github.event.inputs.backfill_from_message_id || '' }}
           BACKFILL_TO_MESSAGE_ID: ${{ github.event.inputs.backfill_to_message_id || '' }}
           LARK_DEDUP_RECENT_N: ${{ github.event.inputs.lark_dedup_recent_n || '' }}
+          LEVELUP_TG_GROUP_ID: ${{ vars.LEVELUP_TG_GROUP_ID }}
+          LEVELUP_BOT_USERNAME: ${{ vars.LEVELUP_BOT_USERNAME }}
           LARK_WIKI_NODE_TOKEN: ${{ vars.LARK_WIKI_NODE_TOKEN }}
           LARK_TABLE_ID: ${{ vars.LARK_TABLE_ID }}
           BTGVN_LARK_WIKI_NODE_TOKEN: ${{ vars.BTGVN_LARK_WIKI_NODE_TOKEN }}
@@ -77,6 +79,8 @@ jobs:
           AD_LARK_TABLE_ID: ${{ vars.AD_LARK_TABLE_ID }}
           KOL_LARK_WIKI_NODE_TOKEN: ${{ vars.KOL_LARK_WIKI_NODE_TOKEN }}
           KOL_LARK_TABLE_ID: ${{ vars.KOL_LARK_TABLE_ID }}
+          LEVELUP_LARK_WIKI_NODE_TOKEN: ${{ vars.LEVELUP_LARK_WIKI_NODE_TOKEN }}
+          LEVELUP_LARK_TABLE_ID: ${{ vars.LEVELUP_LARK_TABLE_ID }}
         run: python main.py
 
       - name: Commit updated state
@@ -85,5 +89,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/last_message_id.txt
+          git add data/last_message_id_levelup.txt
           git diff --cached --quiet || git commit -m "chore: update last_message_id [skip ci]"
           git push
