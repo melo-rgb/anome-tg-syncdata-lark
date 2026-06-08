@@ -71,7 +71,7 @@ class LarkWriter:
             url,
             params={
                 "page_size": n,
-                "sort": f'[{{"field_name":"{field_name}","desc":true}}]',
+                "sort": f'["{field_name} DESC"]',
             },
             headers={"Authorization": f"Bearer {token}"},
             timeout=15,
