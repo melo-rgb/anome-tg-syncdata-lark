@@ -28,17 +28,29 @@ async def _fetch(
         except ValueError:
             group_id_resolved = group_id
 
-        kwargs = {
-            "entity": group_id_resolved,
-            "limit": limit,
-            "min_id": last_message_id,
-        }
-        if max_message_id:
-            kwargs["max_id"] = max_message_id
-        if bot_username:
-            kwargs["from_user"] = bot_username.lstrip("@")
+        # 分页拉取，避免 limit 截断导致旧消息被永久跳过。
+        # min_id/max_id 均为开区间；每页返回最新 limit 条，逐页用最旧 ID 向下翻。
+        messages = []
+        cursor_max_id = max_message_id
+        while True:
+            kwargs = {
+                "entity": group_id_resolved,
+                "limit": limit,
+                "min_id": last_message_id,
+            }
+            if cursor_max_id:
+                kwargs["max_id"] = cursor_max_id
+            if bot_username:
+                kwargs["from_user"] = bot_username.lstrip("@")
 
-        messages = await client.get_messages(**kwargs)
+            page = await client.get_messages(**kwargs)
+            if not page:
+                break
+            messages.extend(page)
+            if len(page) < limit:
+                break
+            cursor_max_id = page[-1].id
+
         return list(reversed(messages))
     finally:
         await client.disconnect()

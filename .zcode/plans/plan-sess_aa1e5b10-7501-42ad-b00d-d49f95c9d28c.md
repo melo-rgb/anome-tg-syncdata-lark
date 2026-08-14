@@ -1,51 +1,46 @@
 ## 目标
-新增 NU World 业务线：从 TG 群组（环境变量 `NU_TG_GROUP_ID`）读取 bot 播报消息（bot id `8156123678`，环境变量 `NU_BOT_USERNAME`），按正则解析后写入飞书多维表格（`NU_LARK_WIKI_NODE_TOKEN` + `NU_LARK_TABLE_ID`）。
-
-已确认：飞书「日期」列为日期字段（毫秒时间戳），值取播报时间 `2026-08-14 00:20:11`，按 GMT+8 转毫秒。
+修复 3 处逻辑问题：#1 分页拉取避免丢消息、#2+#3 去重 fail-loud 与 sort 格式、#4 去重键改为统计日期（「日期」列改存统计日期）。
 
 ## 改动清单
 
-### 1. `src/parser.py` — 新增 `datetime_ms` 类型
-在 `_cast()` 中 `date_ms` 之后新增 `datetime_ms` 分支，将 `YYYY-MM-DD HH:MM:SS` 按 GMT+8 转成毫秒时间戳（与 `date_ms` 一致的处理方式）。
+### 1. `src/telegram_reader.py` — 修复 #1（分页拉取）
+`_fetch` 内从「单次 `get_messages(limit=N)`」改为**分页循环**：
+- 用 `max_id` 游标逐页向下拉，每页 `limit` 条；每页拿完后把游标设为该页最旧消息 ID（`max_id` 为开区间，天然递减）。
+- 当某页返回条数 `< limit`（或为空）时停止。
+- 最后 `reversed()` 返回升序。
+- 效果：不再受 200 条上限截断，正常同步/回补会取回**全部**新消息；`main.py` 的 `state.save_last_id(max(...))` 也会推进到真实最新 ID。
 
-### 2. `src/telegram_reader.py` — 支持数字 bot id
-`from_user` 过滤目前把值当用户名字符串处理。改为：若 `bot_username`（去掉 `@`）是纯数字，则 `int()` 转成用户 ID 再传给 `from_user`，从而正确过滤 bot id `8156123678`。
+### 2. `src/lark_writer.py` — 修复 #2+#3（去重）
+`get_recent_timestamps`：
+- 顶部加 `import json`。
+- `sort` 参数改为官方对象格式：`json.dumps([{"field_name": field_name, "desc": True}], ensure_ascii=False)`。
+- HTTP 错误用 `resp.raise_for_status()`，飞书 `code != 0` 时 `raise RuntimeError(...)`——**不再 `return set()` 静默跳过去重**，让去重基准读取失败时中止写入（fail loud）。
 
-### 3. 新建 `config/parser_config_nuworld.json`
-字段（内部名 → 飞书列名）：
-- `report_date` → 日期（播报时间，`datetime_ms`，required）
-- `page_visits` → 页面访问（required）
-- `visit_level` → 访问详情：/level
-- `visit_home` → 访问详情：/home
-- `visit_arena` → 访问详情：/arena
-- `sessions` → 访问会话
-- `new_users` → 新用户注册
-- `active_users` → 活跃用户
-- `quest_users` → 完成 Quest 用户
-- `checkin_users` → 签到用户
-- `nu_participants` → NU World 参与人数（不含机器人）
-- `nu_volume` → NU World 成交总量（float）
+### 3. `config/parser_config_nuworld.json` — 修复 #4（去重键=统计日期）
+`report_date` 字段：
+- `pattern` 从「播报时间」改为「统计日期」：`统计日期[：:]\s*(\d{4}-\d{2}-\d{2})`
+- `type` 从 `datetime_ms` 改为 `date_ms`
+- `_comment` 同步更新
+- `field_labels` 里 `report_date → 日期` 不变；`row_order` 不变
+- 结果：「日期」列存**统计日期（date-only）**，`main.py:103-104` 的去重（按「日期」）随之变成「每天一条」。
 
-`row_order` 按飞书列顺序：日期、页面访问、/level、/home、/arena、访问会话、新用户注册、活跃用户、完成 Quest 用户、签到用户、NU World 参与人数（不含机器人）、NU World 成交总量。
+### 4. `src/parser.py` — 清理 `datetime_ms`（#4 的连带后果）
+`datetime_ms` 是为「播报时间」专门加的，现在无任何配置使用，删除该分支（保留 `date_ms`）。避免留下死代码。
 
-### 4. `main.py` — 添加 NU World target
-- `build_targets()` 签名改为 `build_targets(lark_app_id, lark_app_secret)`（移除现已无用的 `default_group_id/default_bot_username` 参数）。
-- `candidates` 加入 NU World target：`NU_TG_GROUP_ID` / `NU_BOT_USERNAME` / `NU_LARK_WIKI_NODE_TOKEN` / `NU_LARK_TABLE_ID` / `config/parser_config_nuworld.json` / `data/last_message_id_nuworld.txt`。
-- `main()` 移除 `require_env("TG_GROUP_ID")` 与 `opt_env("BOT_USERNAME")`，调用改为 `build_targets(lark_app_id, lark_app_secret)`。
+### 5. `tests/test_nuworld_parser.py` — 更新断言
+- 「日期」断言从「播报时间毫秒」改为「统计日期 `2026-08-13` 的 `date_ms` 毫秒值」（实现时用 Python 精确算出）。
+- 其余字段断言不变。
 
-### 5. 新建 `tests/test_nuworld_parser.py`
-用示例消息验证解析结果（日期毫秒值、页面访问 4432、/level 834、/home 976、/arena 797、成交总量 98.0 等）。
+### 6. `README.md` — 同步文档
+- 字段映射表：「日期」列含义改为「统计日期」。
+- 类型说明表移除 `datetime_ms`（保留 `date_ms`）。
 
-### 6. `README.md` — 更新状态与配置说明
-- 状态从「已停用」改为「NU World 业务线已启用；其余业务线已停用」。
-- 补充 NU World 环境变量：`NU_TG_GROUP_ID`、`NU_BOT_USERNAME`、`NU_LARK_WIKI_NODE_TOKEN`、`NU_LARK_TABLE_ID`。
-- 补 `datetime_ms` 类型说明。
+## 验证
+- `python -m unittest tests.test_nuworld_parser -v`（日期值改为统计日期后应通过）
+- `python -m py_compile main.py src/parser.py src/telegram_reader.py src/lark_writer.py`
+- 逻辑上确认：#1 分页后不再丢消息；#2+#3 读取失败即中止、不重复写入；#4 去重粒度=统计日期。
 
-## 需要你之后在 CI/环境变量中配置的值（代码不写死）
-- `NU_TG_GROUP_ID`：NU World 播报所在的 TG 群组 ID（负数 `-100...` 或 `@username`）
-- `NU_BOT_USERNAME`：`8156123678`
-- `NU_LARK_WIKI_NODE_TOKEN`、`NU_LARK_TABLE_ID`：NU World 飞书多维表格的 wiki node token 与 table ID
-
-## 不做
-- 不 commit、不 push（沿用你之前「仅本地改动」的选择）
-- 不恢复已删除的 `.github/workflows/sync.yml`（如需要定时调度，需另行恢复 workflow）
+## 不在本次范围
+- 不恢复/修改 `.github/workflows/sync.yml` 的 cron。
+- 不处理 Telegram 限流（`FloodWaitError`）的重试（原 #7，未选）。
+- 不 commit / push（沿用你之前「自行提交」的方式）。

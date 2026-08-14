@@ -1,3 +1,4 @@
+import json
 import time
 from typing import List, Dict, Any
 
@@ -71,18 +72,15 @@ class LarkWriter:
             url,
             params={
                 "page_size": n,
-                "sort": f'["{field_name} DESC"]',
+                "sort": json.dumps([{"field_name": field_name, "desc": True}], ensure_ascii=False),
             },
             headers={"Authorization": f"Bearer {token}"},
             timeout=15,
         )
-        if not resp.ok:
-            print(f"[lark] Warning: could not fetch recent records: HTTP {resp.status_code}")
-            return set()
+        resp.raise_for_status()
         data = resp.json()
         if data.get("code") != 0:
-            print(f"[lark] Warning: could not fetch recent records: {data.get('msg')}")
-            return set()
+            raise RuntimeError(f"Lark list records failed: {data.get('msg')} (code={data.get('code')})")
         items = data.get("data", {}).get("items", [])
         timestamps = set()
         for item in items:

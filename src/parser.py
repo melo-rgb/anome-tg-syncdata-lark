@@ -126,11 +126,4 @@ def _cast(value: str, field_type: str) -> Any:
             return int(dt.timestamp() * 1000)
         except ValueError:
             return value
-    elif field_type == "datetime_ms":
-        try:
-            tz = timezone(timedelta(hours=8))
-            dt = datetime.strptime(value, "%Y-%m-%d %H:%M:%S").replace(tzinfo=tz)
-            return int(dt.timestamp() * 1000)
-        except ValueError:
-            return value
     return value
