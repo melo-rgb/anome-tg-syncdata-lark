@@ -34,7 +34,7 @@ class NUWorldParserTest(unittest.TestCase):
         record = parser.to_record(parser.parse(message))
         fields = record["fields"]
 
-        self.assertEqual(fields["日期"], 1786550400000)
+        self.assertEqual(fields["日期"], 1786638011000)
         self.assertEqual(fields["页面访问"], 4432)
         self.assertEqual(fields["访问详情：/home"], 976)
         self.assertEqual(fields["访问详情：/level"], 834)

@@ -18,10 +18,10 @@
   "fields": [
     {
       "name": "report_date",
-      "_comment": "统计日期：2026-08-13（GMT+8）",
-      "pattern": "统计日期[：:]\\s*(\\d{4}-\\d{2}-\\d{2})",
+      "_comment": "播报时间：2026-08-15 00:20:14",
+      "pattern": "播报时间[：:]\\s*(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})",
       "group": 1,
-      "type": "date_ms",
+      "type": "datetime_ms",
       "required": true
     },
     {
