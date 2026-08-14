@@ -1,4 +1,3 @@
-import json
 import time
 from typing import List, Dict, Any
 
@@ -72,7 +71,7 @@ class LarkWriter:
             url,
             params={
                 "page_size": n,
-                "sort": json.dumps([{"field_name": field_name, "desc": True}], ensure_ascii=False),
+                "sort": f'["{field_name} DESC"]',
             },
             headers={"Authorization": f"Bearer {token}"},
             timeout=15,
