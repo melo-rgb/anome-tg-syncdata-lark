@@ -1,52 +1,31 @@
 # Telegram → Lark 数据同步
 
-自动将 Telegram 群组中 bot 播报的消息同步到飞书（Lark）表格。
+> **当前状态：NU World 业务线已启用。** 原有的 BTG、BTG VN、X、Other、LevelUp / ANOME ONE 五条业务线均已停止使用；当前仅保留 NU World 一条业务线。仓库保留了通用的「Telegram → 飞书多维表格」同步框架，供日后新增业务线时复用。
 
-## 工作原理
+## 通用框架
 
-1. GitHub Actions 定时触发（默认每天 6 次，每 4 小时一次）
-2. 用 Telethon 读取 TG 群组中新的 bot 消息
-3. 用正则规则解析消息内容
-4. 将解析结果追加到飞书表格
+| 文件 | 作用 |
+|------|------|
+| `main.py` | 主入口：组装配置、编排「拉取 → 解析 → 去重 → 写入 → 保存状态」流程 |
+| `src/telegram_reader.py` | 用 Telethon 从 Telegram 群组拉取新消息，带重试 |
+| `src/parser.py` | 配置驱动的正则解析器，把消息文本解析为字段字典并转为表格记录 |
+| `src/lark_writer.py` | 飞书 API 封装：鉴权、wiki node 解析、去重查询、批量写入 |
+| `src/state.py` | 持久化「最后已处理的消息 ID」，实现增量同步 |
+| `generate_session.py` | 本地交互式生成 Telethon session string |
 
----
+依赖仅两个：`telethon`、`requests`（见 `requirements.txt`）。
 
-## 快速开始
+## 当前业务线：NU World
 
-### 第一步：获取 Telegram API 凭证
+从 TG 群组读取 bot 播报消息，解析后写入飞书多维表格。
 
-1. 访问 https://my.telegram.org → 登录 → API development tools
-2. 创建应用，获取 `api_id` 和 `api_hash`
-
-### 第二步：生成 Telethon Session String（本地执行）
-
-```bash
-pip install telethon
-python generate_session.py
-```
-
-按提示输入手机号和验证码，脚本会输出 session string。
-
-### 第三步：获取飞书应用凭证
-
-1. 访问飞书开放平台 https://open.feishu.cn/
-2. 创建企业自建应用
-3. 开通权限：`sheets:spreadsheet`（表格读写）
-4. 发布应用，记录 `App ID` 和 `App Secret`
-5. 在飞书表格右上角分享，添加应用为协作者（编辑权限）
-6. 从表格 URL 获取 `spreadsheetToken`：
-   - URL 格式：`https://xxx.feishu.cn/sheets/shtXXXXXXXX`
-   - `shtXXXXXXXX` 即为 `LARK_SPREADSHEET_TOKEN`
-
-### 第四步：在 GitHub 配置 Secrets 和 Variables
-
-进入 GitHub repo → **Settings** → **Secrets and variables** → **Actions**
+### 环境变量
 
 **Secrets（敏感信息）：**
 
 | Name | 说明 |
 |------|------|
-| `TG_SESSION_STRING` | 第二步生成的 session string |
+| `TG_SESSION_STRING` | Telethon session string |
 | `TG_API_ID` | Telegram API ID |
 | `TG_API_HASH` | Telegram API Hash |
 | `LARK_APP_ID` | 飞书应用 App ID |
@@ -56,75 +35,48 @@ python generate_session.py
 
 | Name | 示例值 | 说明 |
 |------|--------|------|
-| `TG_GROUP_ID` | `-1001234567890` | 群组 ID（负数）或 `@username` |
-| `BOT_USERNAME` | `my_signal_bot` | 只读此 bot 的消息（留空则读所有人） |
-| `LEVELUP_TG_GROUP_ID` | `-1001234567890` | LevelUp / ANOME ONE 播报所在 TG 群组 ID |
-| `LEVELUP_BOT_USERNAME` | `levelup_bot` | 只读此 bot 的 LevelUp 消息（可选，留空则读群内所有消息） |
-| `LARK_WIKI_NODE_TOKEN` | `wikcn...` | BTG 飞书多维表格 wiki node token |
-| `LARK_TABLE_ID` | `tbl...` | BTG 多维表格 table ID |
-| `BTGVN_LARK_WIKI_NODE_TOKEN` | `wikcn...` | BTG VN 飞书多维表格 wiki node token（可选） |
-| `BTGVN_LARK_TABLE_ID` | `tbl...` | BTG VN 多维表格 table ID（可选） |
-| `AD_LARK_WIKI_NODE_TOKEN` | `wikcn...` | X 飞书多维表格 wiki node token（可选） |
-| `AD_LARK_TABLE_ID` | `tbl...` | X 多维表格 table ID（可选） |
-| `KOL_LARK_WIKI_NODE_TOKEN` | `wikcn...` | Other 飞书多维表格 wiki node token（可选） |
-| `KOL_LARK_TABLE_ID` | `tbl...` | Other 多维表格 table ID（可选） |
-| `LEVELUP_LARK_WIKI_NODE_TOKEN` | `wikcn...` | LevelUp / ANOME ONE 飞书多维表格 wiki node token（可选） |
-| `LEVELUP_LARK_TABLE_ID` | `tbl...` | LevelUp / ANOME ONE 多维表格 table ID（可选） |
+| `NU_TG_GROUP_ID` | `-1001234567890` | NU World 播报所在的 TG 群组 ID（负数）或 `@username` |
+| `NU_BOT_USERNAME` | `@Levelupnetwork_bot` | 只读此 bot 的消息（bot 用户名） |
+| `NU_LARK_WIKI_NODE_TOKEN` | `wikcn...` | NU World 飞书多维表格 wiki node token |
+| `NU_LARK_TABLE_ID` | `tbl...` | NU World 多维表格 table ID |
 
-> 获取 TG 群组 ID：将 bot `@userinfobot` 加入群组，发送任意消息即可看到群组 ID
+> 获取 TG 群组 ID：将 bot `@userinfobot` 加入群组，发送任意消息即可看到群组 ID。
 
-### 第五步：配置消息解析规则
+### 运行方式（GitHub Actions）
 
-编辑 [config/parser_config.json](config/parser_config.json) 以匹配你的 bot 消息格式。
+在 GitHub repo → **Settings** → **Secrets and variables** → **Actions** 中配置上述 Secrets 与 Variables，由 `.github/workflows/sync.yml` 定时或手动触发运行。
 
-示例 bot 消息：
-```
-Symbol: BTC/USDT
-Action: BUY
-Price: 65000.00
-Amount: 0.1
-Note: 突破关键阻力位
-```
+### 飞书表格列与消息字段对应
 
-对应配置（默认配置已包含此示例）：
-```json
-{
-  "strategy": "regex",
-  "fields": [
-    { "name": "timestamp" },
-    { "name": "symbol", "pattern": "Symbol:\\s*(\\S+)", "group": 1 },
-    { "name": "action", "pattern": "(BUY|SELL)", "group": 1 },
-    { "name": "price", "pattern": "Price:\\s*([\\d,.]+)", "group": 1, "type": "float" }
-  ],
-  "row_order": ["timestamp", "symbol", "action", "price"]
-}
-```
+| 飞书列名 | 消息字段 | 类型 |
+|---------|---------|------|
+| 日期 | 播报时间 `2026-08-14 00:20:11` | 日期（毫秒时间戳，GMT+8） |
+| 页面访问 | `1. 页面访问：4,432` | int |
+| 访问详情：/level | `/level 834 次` | int |
+| 访问详情：/home | `/home 976 次` | int |
+| 访问详情：/arena | `/arena 797 次` | int |
+| 访问会话 | `2. 访问会话：458` | int |
+| 新用户注册 | `3. 新用户注册：15` | int |
+| 活跃用户 | `4. 活跃用户：198` | int |
+| 完成 Quest 用户 | `5. 完成 Quest 用户：13` | int |
+| 签到用户 | `6. 签到用户：49` | int |
+| NU World 参与人数（不含机器人） | `7. NU World 参与人数（不含机器人）：42` | int |
+| NU World 成交总量 | `8. NU World 成交总量：98.00 USDT` | float |
 
-如果消息格式无规律，可设置 `"strategy": "raw"` 将整条消息写入表格。
+解析规则见 `config/parser_config_nuworld.json`。
 
-### 第六步：手动触发测试
+## 工作原理（框架层面）
 
-1. 进入 GitHub repo → **Actions** → **Sync Telegram to Lark**
-2. 点击 **Run workflow**
-3. 查看日志确认运行正常
+1. 用 Telethon 读取 TG 群组中新的 bot 消息
+2. 用正则规则解析消息内容
+3. 将解析结果追加到飞书多维表格
 
----
+## 如何新增一条业务线
 
-## 调整同步频率
-
-编辑 [.github/workflows/sync.yml](.github/workflows/sync.yml) 中的 cron 表达式：
-
-```yaml
-schedule:
-  - cron: '5 17,21,1,5,9,13 * * *' # 每 4 小时一次
-  # - cron: '*/30 * * * *'  # 每 30 分钟
-  # - cron: '0 * * * *'   # 每小时
-  # - cron: '0 */6 * * *' # 每 6 小时
-```
-
-> GitHub Actions 免费版每月有 2000 分钟额度，每 30 分钟运行一次约需 ~1440 分钟/月（单次运行约 1 分钟）。
-
----
+1. **新建解析配置** `config/parser_config_<name>.json`，字段结构见下文「字段配置说明」。
+2. **在 `main.py` 的 `build_targets()` 中新增一个 target**，填入 `name`、`parser_config`、`group_id`、`bot_username`、`state_file`、`wiki_node_token`、`table_id`。
+3. **配置环境变量**（Telegram 凭证、飞书凭证、群组 ID、wiki node token、table ID）。
+4. **恢复定时调度**：重新添加 `.github/workflows/sync.yml`（包含 cron 与状态提交步骤）。
 
 ## 字段配置说明
 
@@ -133,6 +85,23 @@ schedule:
 | `name` | 字段名，`timestamp`/`message_id`/`sender` 为内置虚拟字段 |
 | `pattern` | Python 正则表达式 |
 | `group` | 正则捕获组序号（0=整体匹配，1=第一个括号） |
-| `type` | 类型转换：`str`（默认）、`float`、`int`、`date_ms`（将 `YYYY-MM-DD` 转为 GMT+08:00 日期毫秒时间戳） |
+| `type` | 类型转换：`str`（默认）、`float`、`int`、`date_ms`（`YYYY-MM-DD` 转 GMT+08:00 毫秒）、`datetime_ms`（`YYYY-MM-DD HH:MM:SS` 转 GMT+08:00 毫秒） |
 | `required` | `true` 时若匹配失败则跳过整条消息 |
 | `default` | 匹配失败时的默认值 |
+| `strategy` | `regex`（按字段解析）或 `raw`（整条消息写入单列） |
+| `field_labels` | 解析字段名到飞书列名的映射 |
+| `row_order` | 输出到表格的字段顺序 |
+
+## Telegram API 凭证与 Session
+
+1. 访问 https://my.telegram.org → 登录 → API development tools，获取 `api_id` 和 `api_hash`。
+2. 本地执行 `python generate_session.py` 生成 session string。
+3. 将 session string 与 `api_id`、`api_hash` 配置为环境变量。
+
+## 飞书应用凭证
+
+1. 访问飞书开放平台 https://open.feishu.cn/ 创建企业自建应用。
+2. 开通权限 `sheets:spreadsheet`（表格读写），发布应用，记录 `App ID` 与 `App Secret`。
+3. 在飞书表格右上角分享，添加应用为协作者（编辑权限）。
+4. 从表格 URL 获取 `spreadsheetToken`（`https://xxx.feishu.cn/sheets/shtXXXXXXXX` 中的 `shtXXXXXXXX`）。
+5. 获取多维表格 wiki node token 与 table ID。

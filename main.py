@@ -36,13 +36,13 @@ def opt_int_env(name: str, default: int) -> int:
         return default
 
 
-def build_targets(lark_app_id: str, lark_app_secret: str, default_group_id: str, default_bot_username: str) -> list:
+def build_targets(lark_app_id: str, lark_app_secret: str) -> list:
     """
     Define all sync targets. Each target needs:
       - name: display name for logs
       - parser_config: path to parser config JSON
       - group_id: Telegram group ID or username
-      - bot_username: optional sender filter
+      - bot_username: optional sender filter (username or numeric bot id)
       - state_file: path to last processed message ID
       - wiki_node_token: Lark wiki node token
       - table_id: Bitable table ID
@@ -50,49 +50,13 @@ def build_targets(lark_app_id: str, lark_app_secret: str, default_group_id: str,
     """
     candidates = [
         {
-            "name": "BTG",
-            "parser_config": "config/parser_config.json",
-            "group_id": default_group_id,
-            "bot_username": default_bot_username,
-            "state_file": "data/last_message_id.txt",
-            "wiki_node_token": opt_env("LARK_WIKI_NODE_TOKEN"),
-            "table_id": opt_env("LARK_TABLE_ID"),
-        },
-        {
-            "name": "BTG VN",
-            "parser_config": "config/parser_config_btgvn.json",
-            "group_id": default_group_id,
-            "bot_username": default_bot_username,
-            "state_file": "data/last_message_id.txt",
-            "wiki_node_token": opt_env("BTGVN_LARK_WIKI_NODE_TOKEN"),
-            "table_id": opt_env("BTGVN_LARK_TABLE_ID"),
-        },
-        {
-            "name": "X",
-            "parser_config": "config/parser_config_ad.json",
-            "group_id": default_group_id,
-            "bot_username": default_bot_username,
-            "state_file": "data/last_message_id.txt",
-            "wiki_node_token": opt_env("AD_LARK_WIKI_NODE_TOKEN"),
-            "table_id": opt_env("AD_LARK_TABLE_ID"),
-        },
-        {
-            "name": "Other",
-            "parser_config": "config/parser_config_kol.json",
-            "group_id": default_group_id,
-            "bot_username": default_bot_username,
-            "state_file": "data/last_message_id.txt",
-            "wiki_node_token": opt_env("KOL_LARK_WIKI_NODE_TOKEN"),
-            "table_id": opt_env("KOL_LARK_TABLE_ID"),
-        },
-        {
-            "name": "LevelUp",
-            "parser_config": "config/parser_config_levelup.json",
-            "group_id": opt_env("LEVELUP_TG_GROUP_ID"),
-            "bot_username": opt_env("LEVELUP_BOT_USERNAME"),
-            "state_file": "data/last_message_id_levelup.txt",
-            "wiki_node_token": opt_env("LEVELUP_LARK_WIKI_NODE_TOKEN"),
-            "table_id": opt_env("LEVELUP_LARK_TABLE_ID"),
+            "name": "NU World",
+            "parser_config": "config/parser_config_nuworld.json",
+            "group_id": opt_env("NU_TG_GROUP_ID"),
+            "bot_username": opt_env("NU_BOT_USERNAME"),
+            "state_file": "data/last_message_id_nuworld.txt",
+            "wiki_node_token": opt_env("NU_LARK_WIKI_NODE_TOKEN"),
+            "table_id": opt_env("NU_LARK_TABLE_ID"),
         },
     ]
     targets = []
@@ -152,8 +116,6 @@ def main():
     session_string = require_env("TG_SESSION_STRING")
     api_id = int(require_env("TG_API_ID"))
     api_hash = require_env("TG_API_HASH")
-    group_id = require_env("TG_GROUP_ID")
-    bot_username = opt_env("BOT_USERNAME")
     fetch_limit = opt_int_env("TG_FETCH_LIMIT", 200)
     dedup_recent_n = opt_int_env("LARK_DEDUP_RECENT_N", 500)
     backfill_from_id = opt_int_env("BACKFILL_FROM_MESSAGE_ID", 0)
@@ -168,7 +130,7 @@ def main():
     lark_app_secret = require_env("LARK_APP_SECRET")
 
     # ── Build sync targets ──────────────────────────────────────────────────
-    targets = build_targets(lark_app_id, lark_app_secret, group_id, bot_username)
+    targets = build_targets(lark_app_id, lark_app_secret)
     if not targets:
         print("[error] No sync targets configured.", file=sys.stderr)
         sys.exit(1)

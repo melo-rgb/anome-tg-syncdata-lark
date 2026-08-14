@@ -1,0 +1,141 @@
+{
+  "_comment": "NU World 每日数据播报解析规则",
+  "strategy": "regex",
+  "field_labels": {
+    "report_date":    "日期",
+    "page_visits":    "页面访问",
+    "visit_level":    "访问详情：/level",
+    "visit_home":     "访问详情：/home",
+    "visit_arena":    "访问详情：/arena",
+    "sessions":       "访问会话",
+    "new_users":      "新用户注册",
+    "active_users":   "活跃用户",
+    "quest_users":    "完成 Quest 用户",
+    "checkin_users":  "签到用户",
+    "nu_participants": "NU World 参与人数（不含机器人）",
+    "nu_volume":      "NU World 成交总量"
+  },
+  "fields": [
+    {
+      "name": "report_date",
+      "_comment": "播报时间：2026-08-14 00:20:11",
+      "pattern": "播报时间[：:]\\s*(\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2})",
+      "group": 1,
+      "type": "datetime_ms",
+      "required": true
+    },
+    {
+      "name": "page_visits",
+      "_comment": "1. 页面访问：4,432",
+      "pattern": "页面访问[：:]\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": true,
+      "default": ""
+    },
+    {
+      "name": "visit_level",
+      "_comment": "访问详情：/level 834 次",
+      "pattern": "/level\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "visit_home",
+      "_comment": "访问详情：/home 976 次",
+      "pattern": "/home\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "visit_arena",
+      "_comment": "访问详情：/arena 797 次",
+      "pattern": "/arena\\s+([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "sessions",
+      "_comment": "2. 访问会话：458",
+      "pattern": "访问会话[：:]\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "new_users",
+      "_comment": "3. 新用户注册：15",
+      "pattern": "新用户注册[：:]\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "active_users",
+      "_comment": "4. 活跃用户：198",
+      "pattern": "活跃用户[：:]\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "quest_users",
+      "_comment": "5. 完成 Quest 用户：13",
+      "pattern": "完成\\s*Quest\\s*用户[：:]\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "checkin_users",
+      "_comment": "6. 签到用户：49",
+      "pattern": "签到用户[：:]\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "nu_participants",
+      "_comment": "7. NU World 参与人数（不含机器人）：42",
+      "pattern": "NU\\s*World\\s*参与人数[（(]不含机器人[）)][：:]\\s*([\\d,]+)",
+      "group": 1,
+      "type": "int",
+      "required": false,
+      "default": 0
+    },
+    {
+      "name": "nu_volume",
+      "_comment": "8. NU World 成交总量：98.00 USDT",
+      "pattern": "NU\\s*World\\s*成交总量[：:]\\s*([\\d,.]+)\\s*USDT",
+      "group": 1,
+      "type": "float",
+      "required": false,
+      "default": 0
+    }
+  ],
+  "row_order": [
+    "report_date",
+    "page_visits",
+    "visit_level",
+    "visit_home",
+    "visit_arena",
+    "sessions",
+    "new_users",
+    "active_users",
+    "quest_users",
+    "checkin_users",
+    "nu_participants",
+    "nu_volume"
+  ]
+}
