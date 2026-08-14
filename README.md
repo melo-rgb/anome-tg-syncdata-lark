@@ -50,7 +50,7 @@
 
 | 飞书列名 | 消息字段 | 类型 |
 |---------|---------|------|
-| 日期 | 播报时间 `2026-08-15 00:20:14` | 日期（毫秒时间戳，GMT+8，用于去重） |
+| 日期 | 统计日期 `2026-08-13` | 日期（毫秒时间戳，GMT+8，用于去重） |
 | 页面访问 | `1. 页面访问：4,432` | int |
 | 访问详情：/level | `/level 834 次` | int |
 | 访问详情：/home | `/home 976 次` | int |
@@ -85,7 +85,7 @@
 | `name` | 字段名，`timestamp`/`message_id`/`sender` 为内置虚拟字段 |
 | `pattern` | Python 正则表达式 |
 | `group` | 正则捕获组序号（0=整体匹配，1=第一个括号） |
-| `type` | 类型转换：`str`（默认）、`float`、`int`、`date_ms`（`YYYY-MM-DD` 转 GMT+08:00 毫秒）、`datetime_ms`（`YYYY-MM-DD HH:MM:SS` 转 GMT+08:00 毫秒） |
+| `type` | 类型转换：`str`（默认）、`float`、`int`、`date_ms`（`YYYY-MM-DD` 转 GMT+08:00 毫秒） |
 | `required` | `true` 时若匹配失败则跳过整条消息 |
 | `default` | 匹配失败时的默认值 |
 | `strategy` | `regex`（按字段解析）或 `raw`（整条消息写入单列） |
