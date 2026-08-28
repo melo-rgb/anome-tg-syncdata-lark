@@ -9,7 +9,7 @@ SAMPLE_MESSAGE = """LevelUp 每日数据播报
 统计日期：2026-08-13（GMT+8）
 播报时间：2026-08-14 00:20:11
 1. 页面访问：4,432
-   访问详情：/home 976 次、/level 834 次、/arena 797 次
+   访问详情：/home 976 次、/level 834 次、/arena 797 次、/quest/Levelup-ocean-Q0804 14,958 次
 2. 访问会话：458
 3. 新用户注册：15
 4. 活跃用户：198
@@ -39,6 +39,7 @@ class NUWorldParserTest(unittest.TestCase):
         self.assertEqual(fields["访问详情：/home"], 976)
         self.assertEqual(fields["访问详情：/level"], 834)
         self.assertEqual(fields["访问详情：/arena"], 797)
+        self.assertEqual(fields["访问详情：/quest/Levelup-ocean-Q0804"], 14958)
         self.assertEqual(fields["访问会话"], 458)
         self.assertEqual(fields["新用户注册"], 15)
         self.assertEqual(fields["活跃用户"], 198)
