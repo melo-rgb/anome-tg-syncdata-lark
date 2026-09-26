@@ -55,6 +55,8 @@
 | 访问详情：/level | `/level 834 次` | int |
 | 访问详情：/home | `/home 976 次` | int |
 | 访问详情：/arena | `/arena 797 次` | int |
+| 访问详情：/quest/Levelup-ocean-Q0804 | `/quest/Levelup-ocean-Q0804 14,958 次` | int |
+| 访问详情：/quest/TokenB-Quest-TKB01 | `/quest/TokenB-Quest-TKB01 7,964 次` | int |
 | 访问会话 | `2. 访问会话：458` | int |
 | 新用户注册 | `3. 新用户注册：15` | int |
 | 活跃用户 | `4. 活跃用户：198` | int |
